@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.core.exception_handlers import register_exception_handlers
 from app.core.firebase import init_firebase
+from app.features.categories.router import router as categories_router
 from app.features.users.router import router as users_router
 
 logging.basicConfig(
@@ -39,6 +40,7 @@ init_firebase()
 
 # Routers
 app.include_router(users_router)
+app.include_router(categories_router)
 
 
 @app.get("/health", description="Health check endpoint to verify the API is running")
