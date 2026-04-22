@@ -14,7 +14,8 @@ from app.core.base_model import Base
 from app.core.config import get_settings
 
 # Import all models so Alembic can detect them
-from app.features.users.models import User 
+from app.features.categories.models import Category
+from app.features.users.models import User
 
 config = context.config
 
