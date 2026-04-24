@@ -23,6 +23,15 @@ class Settings(BaseSettings):
     # Admin
     ADMIN_API_KEY: str
 
+    # Auth recovery
+    OTP_EXPIRY_SECONDS: int = 300
+    OTP_RESEND_COOLDOWN_SECONDS: int = 60
+    OTP_MAX_VERIFY_ATTEMPTS: int = 5
+    OTP_LOCK_MINUTES: int = 15
+    RECOVERY_RATE_LIMIT_WINDOW_SECONDS: int = 300
+    RECOVERY_RATE_LIMIT_MAX_REQUESTS: int = 10
+    SMS_PROVIDER: str = "stub"
+
     # CORS
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8080"
 
