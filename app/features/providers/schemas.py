@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from app.utils.enums import DocumentType, ProviderStatus, ReviewAction
+from app.utils.enums import ReviewAction
 
 
 # Availability slot for a specific day of the week
@@ -48,18 +48,18 @@ class ProviderReviewUpdate(BaseModel):
 
 class DocumentUploadResponse(BaseModel):
     id: uuid.UUID
-    document_type: DocumentType
+    document_type: str
     file_url: str
-    original_filename: str
+    original_filename: str | None = None
 
     model_config = {"from_attributes": True}
 
 
 class ProviderDocumentResponse(BaseModel):
     id: uuid.UUID
-    document_type: DocumentType
+    document_type: str
     file_url: str
-    original_filename: str
+    original_filename: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -92,7 +92,7 @@ class ProviderResponse(BaseModel):
     professional_title: str | None = None
     years_of_experience: int | None = None
     about: str | None = None
-    status: ProviderStatus
+    status: str
     rejection_reason: str | None = None
     submitted_at: datetime | None = None
     reviewed_at: datetime | None = None
@@ -114,7 +114,7 @@ class ProviderListItem(BaseModel):
     user_id: uuid.UUID
     user_name: str | None = None
     professional_title: str | None = None
-    status: ProviderStatus
+    status: str
     submitted_at: datetime | None = None
     created_at: datetime
 

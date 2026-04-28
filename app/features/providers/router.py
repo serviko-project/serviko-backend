@@ -14,7 +14,9 @@ from app.features.providers.schemas import (
     ProviderResponse,
     ProviderReviewUpdate,
 )
-from app.features.providers.service import ProviderApplicationService
+from app.features.providers.admin_service import ProviderAdminService
+from app.features.providers.document_service import ProviderDocumentService
+from app.features.providers.onboarding_service import ProviderOnboardingService
 from app.features.users.models import User
 from app.utils.enums import DocumentType, ProviderStatus
 
@@ -31,10 +33,10 @@ async def submit_application(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    service = ProviderApplicationService(db)
+    service = ProviderOnboardingService(db)
     profile = await service.submit_application(current_user.id, data)
     return success_response(
-        data=service.build_provider_response(profile),
+        data=service.map_profile_to_response(profile),
         message="Application submitted successfully",
     )
 
@@ -45,10 +47,10 @@ async def get_my_provider_profile(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    service = ProviderApplicationService(db)
+    service = ProviderOnboardingService(db)
     profile = await service.get_provider_me(current_user.id)
     return success_response(
-        data=service.build_provider_response(profile),
+        data=service.map_profile_to_response(profile),
     )
 
 
@@ -68,7 +70,7 @@ async def upload_document(
     content_type = file.content_type or "application/octet-stream"
     original_filename = file.filename or "unknown"
 
-    service = ProviderApplicationService(db)
+    service = ProviderDocumentService(db)
     doc = await service.upload_document(
         user_id=current_user.id,
         document_type=document_type,
@@ -77,7 +79,7 @@ async def upload_document(
         original_filename=original_filename,
     )
     return success_response(
-        data=service.build_document_response(doc),
+        data=service.map_document_to_response(doc),
         message="Document uploaded successfully",
     )
 
@@ -89,7 +91,7 @@ async def delete_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    service = ProviderApplicationService(db)
+    service = ProviderDocumentService(db)
     await service.delete_document(current_user.id, document_id)
     return success_response(message="Document deleted successfully")
 
@@ -101,10 +103,10 @@ async def reapply(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    service = ProviderApplicationService(db)
+    service = ProviderOnboardingService(db)
     profile = await service.reapply(current_user.id, data)
     return success_response(
-        data=service.build_provider_response(profile),
+        data=service.map_profile_to_response(profile),
         message="Application resubmitted successfully",
     )
 
@@ -121,12 +123,12 @@ async def list_providers(
     _admin: bool = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    service = ProviderApplicationService(db)
+    service = ProviderAdminService(db)
     providers, total = await service.list_providers(
         page=page, limit=limit, status_filter=status
     )
     return paginated_response(
-        data=[service.build_list_item(p) for p in providers],
+        data=[service.map_list_item(p) for p in providers],
         page=page,
         limit=limit,
         total=total,
@@ -140,10 +142,10 @@ async def get_provider_detail(
     _admin: bool = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    service = ProviderApplicationService(db)
+    service = ProviderAdminService(db)
     profile = await service.get_provider_by_id(provider_id)
     return success_response(
-        data=service.build_provider_response(profile),
+        data=service.map_profile_to_response(profile),
     )
 
 
@@ -155,13 +157,13 @@ async def review_application(
     _admin: bool = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    service = ProviderApplicationService(db)
+    service = ProviderAdminService(db)
     profile = await service.review_application(
         provider_id=provider_id,
         action=data.action,
         rejection_reason=data.rejection_reason,
     )
     return success_response(
-        data=service.build_provider_response(profile),
+        data=service.map_profile_to_response(profile),
         message=f"Application {data.action.value}d successfully",
     )
