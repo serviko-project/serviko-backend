@@ -35,11 +35,11 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8080"
 
-    # AWS S3
-    AWS_ACCESS_KEY_ID: str = ""
-    AWS_SECRET_ACCESS_KEY: str = ""
-    AWS_S3_BUCKET_NAME: str = "serviko-uploads"
-    AWS_S3_REGION: str = "ap-south-1"
+    # Supabase Storage
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_KEY: str = ""
+    SUPABASE_BUCKET_PROFILE_IMAGES: str = "profile-images"
+    SUPABASE_BUCKET_PROVIDER_DOCUMENTS: str = "provider-documents"
 
     @property
     def cors_origins_list(self) -> list[str]:

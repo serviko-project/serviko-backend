@@ -1,10 +1,11 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.responses import PaginatedResponse, SuccessResponse, paginated_response, success_response
+from app.core.storage import StorageBucket, delete_file, upload_file
 from app.features.auth.dependencies import get_current_user, get_verified_firebase_token, require_admin
 from app.features.users.models import User
 from app.features.users.schemas import UserCreate, UserResponse, UserUpdate
@@ -52,6 +53,53 @@ async def update_me(
     return success_response(
         data=UserResponse.model_validate(updated).model_dump(mode="json"),
         message="User profile updated successfully",
+    )
+
+
+# Upload profile image
+@router.post("/me/profile-image", response_model=SuccessResponse[UserResponse])
+async def upload_profile_image(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    file_bytes = await file.read()
+    content_type = file.content_type or "application/octet-stream"
+
+    # Delete old image from storage if it exists
+    if current_user.profile_image_url:
+        delete_file(StorageBucket.PROFILE_IMAGES, current_user.profile_image_url)
+
+    # Upload new image
+    public_url = upload_file(
+        bucket=StorageBucket.PROFILE_IMAGES,
+        folder=str(current_user.id),
+        file_bytes=file_bytes,
+        content_type=content_type,
+    )
+
+    service = UserService(db)
+    updated = await service.update_profile_image(current_user.id, public_url)
+    return success_response(
+        data=UserResponse.model_validate(updated).model_dump(mode="json"),
+        message="Profile image uploaded",
+    )
+
+
+# Delete profile image
+@router.delete("/me/profile-image", response_model=SuccessResponse[UserResponse])
+async def remove_profile_image(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if current_user.profile_image_url:
+        delete_file(StorageBucket.PROFILE_IMAGES, current_user.profile_image_url)
+
+    service = UserService(db)
+    updated = await service.clear_profile_image(current_user.id)
+    return success_response(
+        data=UserResponse.model_validate(updated).model_dump(mode="json"),
+        message="Profile image removed",
     )
 
 
