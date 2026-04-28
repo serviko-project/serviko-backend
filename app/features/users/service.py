@@ -92,3 +92,19 @@ class UserService:
         users = list(result.scalars().all())
 
         return users, total
+
+    # Update profile image URL
+    async def update_profile_image(self, user_id: uuid.UUID, image_url: str) -> User:
+        user = await self.get_user_by_id(user_id)
+        user.profile_image_url = image_url
+        await self.db.flush()
+        await self.db.refresh(user)
+        return user
+
+    # Clear profile image URL
+    async def clear_profile_image(self, user_id: uuid.UUID) -> User:
+        user = await self.get_user_by_id(user_id)
+        user.profile_image_url = None
+        await self.db.flush()
+        await self.db.refresh(user)
+        return user

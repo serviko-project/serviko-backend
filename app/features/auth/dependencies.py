@@ -1,4 +1,5 @@
 from fastapi import Depends, Header
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
@@ -8,25 +9,27 @@ from app.core.firebase import verify_firebase_token
 from app.features.users.models import User
 from app.features.users.service import UserService
 
+security = HTTPBearer()
 
-async def get_current_user(
-    authorization: str = Header(..., description="Bearer <firebase_token>"),
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    # Extract token from "Bearer <token>"
-    if not authorization.startswith("Bearer "):
-        raise UnauthorizedException("Invalid authorization header format")
 
-    token = authorization.removeprefix("Bearer ").strip()
+async def get_verified_firebase_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
+    token = credentials.credentials
     if not token:
         raise UnauthorizedException("Missing authentication token")
 
     # Verify with Firebase
-    decoded = verify_firebase_token(token)
+    return verify_firebase_token(token)
 
+
+async def get_current_user(
+    token_data: dict = Depends(get_verified_firebase_token),
+    db: AsyncSession = Depends(get_db),
+) -> User:
     # Look up user in DB
     service = UserService(db)
-    user = await service.get_user_by_firebase_uid(decoded["uid"])
+    user = await service.get_user_by_firebase_uid(token_data["uid"])
     if user is None:
         raise UnauthorizedException(
             "User profile not found. Please complete registration.")
