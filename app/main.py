@@ -8,6 +8,7 @@ from app.core.exception_handlers import register_exception_handlers
 from app.core.firebase import init_firebase
 from app.features.auth.router import router as auth_router
 from app.features.categories.router import router as categories_router
+from app.features.providers.router import router as providers_router
 from app.features.users.router import router as users_router
 
 logging.basicConfig(
@@ -43,6 +44,7 @@ init_firebase()
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(categories_router)
+app.include_router(providers_router)
 
 
 @app.get("/health", description="Health check endpoint to verify the API is running")
