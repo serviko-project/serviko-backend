@@ -28,3 +28,4 @@ class DocumentType(str, enum.Enum):
 class ReviewAction(str, enum.Enum):
     APPROVE = "approve"
     REJECT = "reject"
+    BLOCK = "block"

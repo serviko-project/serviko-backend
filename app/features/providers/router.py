@@ -120,12 +120,13 @@ async def list_providers(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     status: ProviderStatus | None = Query(None),
+    search: str | None = Query(None),
     _admin: bool = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     service = ProviderAdminService(db)
     providers, total = await service.list_providers(
-        page=page, limit=limit, status_filter=status
+        page=page, limit=limit, status_filter=status, search=search,
     )
     return paginated_response(
         data=[service.map_list_item(p) for p in providers],
@@ -163,7 +164,10 @@ async def review_application(
         action=data.action,
         rejection_reason=data.rejection_reason,
     )
+    
+    action_msg = "approved" if data.action.value == "approve" else f"{data.action.value}ed"
+    
     return success_response(
         data=service.map_profile_to_response(profile),
-        message=f"Application {data.action.value}d successfully",
+        message=f"Provider {action_msg} successfully",
     )

@@ -88,6 +88,8 @@ class ProviderResponse(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
     user_name: str | None = None
+    email: str | None = None
+    phone_number: str | None = None
     user_profile_image_url: str | None = None
     professional_title: str | None = None
     years_of_experience: int | None = None
@@ -113,8 +115,12 @@ class ProviderListItem(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
     user_name: str | None = None
+    email: str | None = None
+    phone_number: str | None = None
+    user_profile_image_url: str | None = None
     professional_title: str | None = None
     status: str
+    categories: list[str] = []
     submitted_at: datetime | None = None
     created_at: datetime
 

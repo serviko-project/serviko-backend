@@ -83,6 +83,8 @@ class ProviderBaseService:
             "id": profile.id,
             "user_id": profile.user_id,
             "user_name": user.full_name if user else None,
+            "email": user.email if user else None,
+            "phone_number": user.phone_number if user else None,
             "user_profile_image_url": user.profile_image_url if user else None,
             "professional_title": profile.professional_title,
             "years_of_experience": profile.years_of_experience,
