@@ -1,5 +1,5 @@
 from sqlalchemy import Boolean, Date, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base_model import Base, TimestampMixin
 
@@ -20,4 +20,12 @@ class User(TimestampMixin, Base):
     profile_image_url: Mapped[str | None] = mapped_column(Text)
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, nullable=False
+    )
+
+    # Relationships
+    provider_profile = relationship(
+        "ProviderProfile",
+        back_populates="user",
+        uselist=False,
+        lazy="selectin",
     )
