@@ -34,6 +34,7 @@ class UserResponse(BaseModel):
     gender: Gender | None = None
     profile_image_url: str | None = None
     is_active: bool
+    provider_status: str | None = None
     created_at: datetime
     updated_at: datetime
 
