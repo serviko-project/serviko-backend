@@ -8,6 +8,7 @@ from app.core.exception_handlers import register_exception_handlers
 from app.core.firebase import init_firebase
 from app.features.auth.router import router as auth_router
 from app.features.categories.router import router as categories_router
+from app.features.category_requests.router import router as category_requests_router
 from app.features.providers.router import router as providers_router
 from app.features.users.router import router as users_router
 
@@ -44,6 +45,7 @@ init_firebase()
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(categories_router)
+app.include_router(category_requests_router)
 app.include_router(providers_router)
 
 

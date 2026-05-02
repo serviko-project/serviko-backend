@@ -29,3 +29,14 @@ class ReviewAction(str, enum.Enum):
     APPROVE = "approve"
     REJECT = "reject"
     BLOCK = "block"
+
+
+class CategoryRequestStatus(str, enum.Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    DECLINED = "declined"
+
+
+class CategoryRequestAction(str, enum.Enum):
+    APPROVE = "approve"
+    DECLINE = "decline"
