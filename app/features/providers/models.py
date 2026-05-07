@@ -44,6 +44,7 @@ class ProviderProfile(TimestampMixin, Base):
     coverage_radius_km: Mapped[float | None] = mapped_column(
         Float, default=15.0
     )
+    banner_image_url: Mapped[str | None] = mapped_column(Text)
     is_deleted: Mapped[bool] = mapped_column(
         Boolean, default=False, nullable=False
     )
@@ -87,6 +88,7 @@ class ProviderService(TimestampMixin, Base):
         ForeignKey("categories.id", ondelete="RESTRICT"),
         nullable=False,
     )
+    base_price_per_hour: Mapped[float | None] = mapped_column(Float)
 
     # Relationships
     provider = relationship("ProviderProfile", back_populates="services")

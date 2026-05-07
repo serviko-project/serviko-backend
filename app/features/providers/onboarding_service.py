@@ -16,7 +16,7 @@ from app.features.providers.models import (
     ProviderProfile,
     ProviderService,
 )
-from app.features.providers.schemas import ProviderApplyCreate, ProviderReapplyUpdate
+from app.features.providers.schemas import ProviderApplyCreate, ProviderReapplyUpdate, ServiceCategoryInput
 from app.utils.enums import ProviderStatus
 
 
@@ -48,7 +48,8 @@ class ProviderOnboardingService(ProviderBaseService):
             )
 
         # Validate categories
-        await self._validate_categories(data.service_category_ids)
+        category_ids = [sc.category_id for sc in data.service_categories]
+        await self._validate_categories(category_ids)
 
         # Update profile fields
         profile.professional_title = data.professional_title
@@ -61,7 +62,7 @@ class ProviderOnboardingService(ProviderBaseService):
         profile.submitted_at = datetime.now(timezone.utc)
 
         # Sync services and availability
-        await self._sync_services(profile.id, data.service_category_ids)
+        await self._sync_services(profile.id, data.service_categories)
         await self._sync_availability(profile.id, data.availability)
 
         await self.db.flush()
@@ -87,7 +88,8 @@ class ProviderOnboardingService(ProviderBaseService):
             )
 
         # Validate categories
-        await self._validate_categories(data.service_category_ids)
+        category_ids = [sc.category_id for sc in data.service_categories]
+        await self._validate_categories(category_ids)
 
         # Update profile
         profile.professional_title = data.professional_title
@@ -102,7 +104,7 @@ class ProviderOnboardingService(ProviderBaseService):
         profile.submitted_at = datetime.now(timezone.utc)
 
         # Sync services and availability
-        await self._sync_services(profile.id, data.service_category_ids)
+        await self._sync_services(profile.id, data.service_categories)
         await self._sync_availability(profile.id, data.availability)
 
         await self.db.flush()
@@ -128,15 +130,21 @@ class ProviderOnboardingService(ProviderBaseService):
             raise ValidationException(
                 "One or more selected categories are invalid")
 
-    async def _sync_services(self, provider_id: uuid.UUID, category_ids: list[uuid.UUID]):
+    async def _sync_services(
+        self, provider_id: uuid.UUID, service_categories: list[ServiceCategoryInput]
+    ):
         await self.db.execute(
             delete(ProviderService).where(
                 ProviderService.provider_id == provider_id
             )
         )
-        for cat_id in category_ids:
+        for sc in service_categories:
             self.db.add(
-                ProviderService(provider_id=provider_id, category_id=cat_id)
+                ProviderService(
+                    provider_id=provider_id,
+                    category_id=sc.category_id,
+                    base_price_per_hour=sc.base_price_per_hour,
+                )
             )
 
     async def _sync_availability(self, provider_id: uuid.UUID, availability_data: list):

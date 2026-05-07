@@ -6,6 +6,12 @@ from pydantic import BaseModel, Field
 from app.utils.enums import ReviewAction
 
 
+# Per-category service input with pricing
+class ServiceCategoryInput(BaseModel):
+    category_id: uuid.UUID
+    base_price_per_hour: float = Field(..., gt=0, le=100000)
+
+
 # Availability slot for a specific day of the week
 class AvailabilitySlotCreate(BaseModel):
     day_of_week: int = Field(..., ge=1, le=7)
@@ -19,7 +25,7 @@ class ProviderApplyCreate(BaseModel):
     professional_title: str = Field(..., min_length=1, max_length=150)
     years_of_experience: int = Field(..., ge=0, le=50)
     about: str | None = Field(None, max_length=2000)
-    service_category_ids: list[uuid.UUID] = Field(..., min_length=1)
+    service_categories: list[ServiceCategoryInput] = Field(..., min_length=1)
     availability: list[AvailabilitySlotCreate] = Field(..., min_length=7, max_length=7)
     latitude: float | None = None
     longitude: float | None = None
@@ -31,7 +37,7 @@ class ProviderReapplyUpdate(BaseModel):
     professional_title: str = Field(..., min_length=1, max_length=150)
     years_of_experience: int = Field(..., ge=0, le=50)
     about: str | None = Field(None, max_length=2000)
-    service_category_ids: list[uuid.UUID] = Field(..., min_length=1)
+    service_categories: list[ServiceCategoryInput] = Field(..., min_length=1)
     availability: list[AvailabilitySlotCreate] = Field(..., min_length=7, max_length=7)
     latitude: float | None = None
     longitude: float | None = None
@@ -69,6 +75,7 @@ class ProviderServiceResponse(BaseModel):
     category_id: uuid.UUID
     category_title: str
     category_icon: str
+    base_price_per_hour: float | None = None
 
     model_config = {"from_attributes": True}
 
@@ -101,6 +108,7 @@ class ProviderResponse(BaseModel):
     latitude: float | None = None
     longitude: float | None = None
     coverage_radius_km: float | None = None
+    banner_image_url: str | None = None
     services: list[ProviderServiceResponse] = []
     availability: list[ProviderAvailabilityResponse] = []
     documents: list[ProviderDocumentResponse] = []
