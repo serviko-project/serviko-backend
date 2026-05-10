@@ -26,19 +26,28 @@ class ProviderApplyCreate(BaseModel):
     years_of_experience: int = Field(..., ge=0, le=50)
     about: str | None = Field(None, max_length=2000)
     service_categories: list[ServiceCategoryInput] = Field(..., min_length=1)
-    availability: list[AvailabilitySlotCreate] = Field(..., min_length=7, max_length=7)
+    availability: list[AvailabilitySlotCreate] = Field(
+        ..., min_length=7, max_length=7)
     latitude: float | None = None
     longitude: float | None = None
     coverage_radius_km: float = Field(15.0, ge=1.0, le=50.0)
 
 
-# Re-application payload 
+# Provider details Update
+class ProviderDetailsUpdate(BaseModel):
+    professional_title: str | None = Field(None, min_length=1, max_length=150)
+    years_of_experience: int | None = Field(None, ge=0, le=50)
+    about: str | None = Field(None, max_length=2000)
+
+
+# Re-application payload
 class ProviderReapplyUpdate(BaseModel):
     professional_title: str = Field(..., min_length=1, max_length=150)
     years_of_experience: int = Field(..., ge=0, le=50)
     about: str | None = Field(None, max_length=2000)
     service_categories: list[ServiceCategoryInput] = Field(..., min_length=1)
-    availability: list[AvailabilitySlotCreate] = Field(..., min_length=7, max_length=7)
+    availability: list[AvailabilitySlotCreate] = Field(
+        ..., min_length=7, max_length=7)
     latitude: float | None = None
     longitude: float | None = None
     coverage_radius_km: float = Field(15.0, ge=1.0, le=50.0)
@@ -90,7 +99,7 @@ class ProviderAvailabilityResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# Full provider profile response 
+# Full provider profile response
 class ProviderResponse(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
