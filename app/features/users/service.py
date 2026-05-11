@@ -31,6 +31,8 @@ class UserService:
             date_of_birth=data.date_of_birth,
             gender=data.gender.value if data.gender else None,
             profile_image_url=data.profile_image_url,
+            latitude=data.latitude,
+            longitude=data.longitude,
         )
         self.db.add(user)
         await self.db.flush()
