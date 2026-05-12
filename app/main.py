@@ -11,6 +11,7 @@ from app.features.categories.router import router as categories_router
 from app.features.category_requests.router import router as category_requests_router
 from app.features.providers.router import router as providers_router
 from app.features.users.router import router as users_router
+from app.features.services.router import router as services_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -47,6 +48,7 @@ app.include_router(users_router)
 app.include_router(categories_router)
 app.include_router(category_requests_router)
 app.include_router(providers_router)
+app.include_router(services_router)
 
 
 @app.get("/health", description="Health check endpoint to verify the API is running")
