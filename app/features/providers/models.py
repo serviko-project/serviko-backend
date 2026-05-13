@@ -89,6 +89,9 @@ class ProviderService(TimestampMixin, Base):
         nullable=False,
     )
     base_price_per_hour: Mapped[float | None] = mapped_column(Float)
+    rating: Mapped[float] = mapped_column(Float, default=0, server_default="0")
+    reviews_count: Mapped[int] = mapped_column(
+        SmallInteger, default=0, server_default="0")
 
     # Relationships
     provider = relationship("ProviderProfile", back_populates="services")

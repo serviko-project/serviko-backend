@@ -24,8 +24,8 @@ def _map_service_detail(service) -> dict:
         "banner_image": service.provider.banner_image_url if service.provider else None,
         "professional_title": service.provider.professional_title if service.provider else None,
         "base_price_per_hour": service.base_price_per_hour or 0.0,
-        "rating": 4.5,
-        "reviews_count": 100,
+        "rating": service.rating,
+        "reviews_count": service.reviews_count,
         "years_of_experience": service.provider.years_of_experience if service.provider else None,
         "latitude": service.provider.latitude if service.provider else None,
         "longitude": service.provider.longitude if service.provider else None,
@@ -48,11 +48,27 @@ async def list_services(
     limit: int = Query(20, ge=1, le=100),
     search_query: str | None = Query(None),
     category_id: uuid.UUID | None = Query(None),
+    min_price: float | None = Query(None),
+    max_price: float | None = Query(None),
+    min_rating: float | None = Query(None),
+    min_experience: int | None = Query(None),
+    max_experience: int | None = Query(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     service = SearchService(db)
-    services, total = await service.list_services(page, limit, current_user.id, search_query, category_id)
+    services, total = await service.list_services(
+        page,
+        limit,
+        current_user.id,
+        search_query,
+        category_id,
+        min_price,
+        max_price,
+        min_rating,
+        min_experience,
+        max_experience
+    )
 
     return paginated_response(
         data=[_map_service_detail(s) for s in services],
