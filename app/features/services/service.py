@@ -34,6 +34,7 @@ class SearchService:
             .join(ProviderProfile.user)
             .where(ProviderProfile.status == "approved")
             .where(ProviderProfile.is_deleted == False)
+            .where(Category.status == "active")
             .where(ProviderProfile.user_id != current_user_id)
         )
 
@@ -96,6 +97,7 @@ class SearchService:
             .join(ProviderProfile.user)
             .where(ProviderProfile.status == "approved")
             .where(ProviderProfile.is_deleted == False)
+            .where(Category.status == "active")
             .where(ProviderProfile.user_id != current_user_id)
         )
 
@@ -136,7 +138,7 @@ class SearchService:
         if not service:
             raise NotFoundException("Service not found")
 
-        if service.provider.status != "approved" or service.provider.is_deleted:
+        if service.provider.status != "approved" or service.provider.is_deleted or service.category.status != "active":
             raise NotFoundException("Service not found")
 
         return service
