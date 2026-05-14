@@ -40,3 +40,16 @@ class CategoryRequestStatus(str, enum.Enum):
 class CategoryRequestAction(str, enum.Enum):
     APPROVE = "approve"
     DECLINE = "decline"
+
+
+class BookingStatus(str, enum.Enum):
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    REJECTED = "rejected"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+
+
+class BookingAction(str, enum.Enum):
+    CONFIRM = "confirm"
+    REJECT = "reject"

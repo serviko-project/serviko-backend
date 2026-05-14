@@ -31,3 +31,8 @@ class User(TimestampMixin, Base):
         uselist=False,
         lazy="selectin",
     )
+    bookings = relationship(
+        "Booking",
+        back_populates="customer",
+        lazy="noload",
+    )

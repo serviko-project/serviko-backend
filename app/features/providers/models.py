@@ -69,6 +69,11 @@ class ProviderProfile(TimestampMixin, Base):
         lazy="selectin",
         cascade="all, delete-orphan",
     )
+    bookings = relationship(
+        "Booking",
+        back_populates="provider",
+        lazy="noload",
+    )
 
 
 class ProviderService(TimestampMixin, Base):
