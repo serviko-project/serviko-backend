@@ -43,6 +43,7 @@ class CategoryRequestService:
             user_id=user_id,
             title=data.title,
             description=data.description,
+            proposed_base_price=data.proposed_base_price,
             status=CategoryRequestStatus.PENDING.value,
         )
         self.db.add(request)
@@ -150,6 +151,7 @@ class CategoryRequestService:
                     ProviderService(
                         provider_id=provider.id,
                         category_id=category.id,
+                        base_price_per_hour=request.proposed_base_price,
                     )
                 )
 

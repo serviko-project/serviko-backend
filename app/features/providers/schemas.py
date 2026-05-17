@@ -25,7 +25,7 @@ class ProviderApplyCreate(BaseModel):
     professional_title: str = Field(..., min_length=1, max_length=150)
     years_of_experience: int = Field(..., ge=0, le=50)
     about: str | None = Field(None, max_length=2000)
-    service_categories: list[ServiceCategoryInput] = Field(..., min_length=1)
+    service_categories: list[ServiceCategoryInput] = Field(default_factory=list)
     availability: list[AvailabilitySlotCreate] = Field(
         ..., min_length=7, max_length=7)
     latitude: float | None = None
@@ -45,7 +45,7 @@ class ProviderReapplyUpdate(BaseModel):
     professional_title: str = Field(..., min_length=1, max_length=150)
     years_of_experience: int = Field(..., ge=0, le=50)
     about: str | None = Field(None, max_length=2000)
-    service_categories: list[ServiceCategoryInput] = Field(..., min_length=1)
+    service_categories: list[ServiceCategoryInput] = Field(default_factory=list)
     availability: list[AvailabilitySlotCreate] = Field(
         ..., min_length=7, max_length=7)
     latitude: float | None = None

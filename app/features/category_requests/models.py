@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import DateTime, ForeignKey, String, Text
+from sqlalchemy import DateTime, ForeignKey, String, Text, Float
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -20,6 +20,9 @@ class CategoryRequest(TimestampMixin, Base):
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="pending", index=True
+    )
+    proposed_base_price: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.0"
     )
     admin_note: Mapped[str | None] = mapped_column(Text)
     reviewed_at: Mapped[str | None] = mapped_column(DateTime(timezone=True))

@@ -32,6 +32,7 @@ def _request_response(request) -> dict:
         provider_avatar_url=request.user.profile_image_url if request.user else None,
         requested_category=request.title,
         description=request.description,
+        proposed_base_price=request.proposed_base_price,
         status=request.status,
         admin_note=request.admin_note,
         submitted_at=request.created_at,

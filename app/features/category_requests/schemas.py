@@ -10,6 +10,7 @@ from app.utils.enums import CategoryRequestAction
 class CategoryRequestCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=100)
     description: str = Field(..., min_length=1, max_length=500)
+    proposed_base_price: float = Field(..., gt=0, le=10000)
 
 
 class CategoryRequestReview(BaseModel):
@@ -28,6 +29,7 @@ class CategoryRequestResponse(BaseModel):
     provider_avatar_url: str | None = None
     requested_category: str
     description: str | None = None
+    proposed_base_price: float
     status: str
     admin_note: str | None = None
     submitted_at: datetime
