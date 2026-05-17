@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Date, String, Text
+from sqlalchemy import Boolean, Date, Float, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base_model import Base, TimestampMixin
@@ -21,6 +21,8 @@ class User(TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, nullable=False
     )
+    latitude: Mapped[float | None] = mapped_column(Float)
+    longitude: Mapped[float | None] = mapped_column(Float)
 
     # Relationships
     provider_profile = relationship(
@@ -28,4 +30,9 @@ class User(TimestampMixin, Base):
         back_populates="user",
         uselist=False,
         lazy="selectin",
+    )
+    bookings = relationship(
+        "Booking",
+        back_populates="customer",
+        lazy="noload",
     )

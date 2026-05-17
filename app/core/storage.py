@@ -10,6 +10,7 @@ from app.core.exceptions import ValidationException
 class StorageBucket(str, Enum):
     PROFILE_IMAGES = "profile-images"
     PROVIDER_DOCUMENTS = "provider-documents"
+    PROVIDER_BANNERS = "provider-banners"
 
 
 # Bucket validation rules
@@ -29,6 +30,11 @@ BUCKET_RULES: dict[StorageBucket, dict] = {
         },
         "label": "Provider document",
     },
+    StorageBucket.PROVIDER_BANNERS: {
+        "max_size_bytes": 5 * 1024 * 1024,  # 5MB
+        "allowed_mime_types": {"image/jpeg", "image/png", "image/webp"},
+        "label": "Provider banner",
+    },
 }
 
 
@@ -41,6 +47,8 @@ def _resolve_bucket_name(bucket: StorageBucket) -> str:
     settings = get_settings()
     if bucket == StorageBucket.PROFILE_IMAGES:
         return settings.SUPABASE_BUCKET_PROFILE_IMAGES
+    if bucket == StorageBucket.PROVIDER_BANNERS:
+        return settings.SUPABASE_BUCKET_PROVIDER_BANNERS
     return settings.SUPABASE_BUCKET_PROVIDER_DOCUMENTS
 
 
@@ -88,8 +96,8 @@ def upload_file(
         file_options={"content-type": content_type},
     )
 
-    # Public bucket for Profile Images -> return public URL
-    if bucket == StorageBucket.PROFILE_IMAGES:
+    # Public buckets -> return public URL
+    if bucket in (StorageBucket.PROFILE_IMAGES, StorageBucket.PROVIDER_BANNERS):
         return client.storage.from_(bucket_name).get_public_url(filename)
 
     # Private bucket for Provider Documents -> return relative path 

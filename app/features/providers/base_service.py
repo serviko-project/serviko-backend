@@ -50,6 +50,7 @@ class ProviderBaseService:
                 "category_id": ps.category_id,
                 "category_title": cat.title if cat else "Unknown",
                 "category_icon": cat.icon if cat else "help_outline",
+                "base_price_per_hour": ps.base_price_per_hour,
             })
 
         # Build availability list
@@ -96,6 +97,7 @@ class ProviderBaseService:
             "latitude": profile.latitude,
             "longitude": profile.longitude,
             "coverage_radius_km": profile.coverage_radius_km,
+            "banner_image_url": profile.banner_image_url,
             "services": services,
             "availability": availability_list,
             "documents": documents,

@@ -13,6 +13,8 @@ class UserCreate(BaseModel):
     date_of_birth: date | None = None
     gender: Gender | None = None
     profile_image_url: str | None = Field(None, max_length=2048)
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 # Partial update of User profile
@@ -22,6 +24,8 @@ class UserUpdate(BaseModel):
     date_of_birth: date | None = None
     gender: Gender | None = None
     profile_image_url: str | None = Field(None, max_length=2048)
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 # API response
@@ -34,6 +38,9 @@ class UserResponse(BaseModel):
     gender: Gender | None = None
     profile_image_url: str | None = None
     is_active: bool
+    latitude: float | None = None
+    longitude: float | None = None
+    provider_status: str | None = None
     created_at: datetime
     updated_at: datetime
 

@@ -44,3 +44,13 @@ async def require_admin(
     if x_admin_key != settings.ADMIN_API_KEY:
         raise ForbiddenException("Invalid admin key")
     return True
+
+
+async def is_admin_optional(
+    x_admin_key: str | None = Header(None, alias="X-Admin-Key"),
+) -> bool:
+    settings = get_settings()
+    if not x_admin_key:
+        return False
+    return x_admin_key == settings.ADMIN_API_KEY
+

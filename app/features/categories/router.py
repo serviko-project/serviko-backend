@@ -5,13 +5,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.responses import paginated_response, success_response
-from app.features.auth.dependencies import require_admin
+from app.features.auth.dependencies import is_admin_optional, require_admin
 from app.features.categories.schemas import (
     CategoryCreate,
     CategoryResponse,
     CategoryUpdate,
 )
 from app.features.categories.service import CategoryService
+from app.core.exceptions import NotFoundException
 
 router = APIRouter(prefix="/api/v1/categories", tags=["Categories"])
 
@@ -38,9 +39,14 @@ async def list_categories(
     limit: int = Query(20, ge=1, le=100),
     status: str | None = Query(None, description="Filter by status (active/inactive)"),
     search: str | None = Query(None, description="Search by category title"),
+    is_admin: bool = Depends(is_admin_optional),
     db: AsyncSession = Depends(get_db),
 ):
     service = CategoryService(db)
+    
+    if not is_admin:
+        status = "active"
+        
     categories, total = await service.list_categories(
         page=page, limit=limit, status=status, search=search,
     )
@@ -59,10 +65,15 @@ async def list_categories(
 @router.get("/{category_id}", description="Get a category by ID")
 async def get_category(
     category_id: uuid.UUID,
+    is_admin: bool = Depends(is_admin_optional),
     db: AsyncSession = Depends(get_db),
 ):
     service = CategoryService(db)
     category = await service.get_category_by_id(category_id)
+    
+    if not is_admin and category.status != "active":
+        raise NotFoundException("Category not found")
+        
     return success_response(
         data=CategoryResponse.model_validate(category).model_dump(mode="json"),
     )

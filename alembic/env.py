@@ -16,6 +16,7 @@ from app.core.config import get_settings
 # Import all models so Alembic can detect them
 from app.features.auth.otp_session_model import PasswordResetSession, RecoveryRateLimit
 from app.features.categories.models import Category
+from app.features.category_requests.models import CategoryRequest
 from app.features.providers.models import (
     ProviderAvailability,
     ProviderDocument,

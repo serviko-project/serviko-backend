@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_KEY: str = ""
     SUPABASE_BUCKET_PROFILE_IMAGES: str = "profile-images"
     SUPABASE_BUCKET_PROVIDER_DOCUMENTS: str = "provider-documents"
+    SUPABASE_BUCKET_PROVIDER_BANNERS: str = "provider-banners"
 
     @property
     def cors_origins_list(self) -> list[str]:

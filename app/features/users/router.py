@@ -14,6 +14,14 @@ from app.features.users.service import UserService
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
 
+# UserResponse dict 
+def _user_response_data(user: User) -> dict:
+    response = UserResponse.model_validate(user)
+    if user.provider_profile and not user.provider_profile.is_deleted:
+        response.provider_status = user.provider_profile.status
+    return response.model_dump(mode="json")
+
+
 # Create user profile after Firebase signup
 @router.post("", status_code=201, response_model=SuccessResponse[UserResponse])
 async def create_user(
@@ -28,7 +36,7 @@ async def create_user(
         data=data,
     )
     return success_response(
-        data=UserResponse.model_validate(user).model_dump(mode="json"),
+        data=_user_response_data(user),
         message="User profile created",
     )
 
@@ -37,7 +45,7 @@ async def create_user(
 @router.get("/me", description="Get the profile of the currently authenticated user", response_model=SuccessResponse[UserResponse])
 async def get_me(current_user: User = Depends(get_current_user)):
     return success_response(
-        data=UserResponse.model_validate(current_user).model_dump(mode="json"),
+        data=_user_response_data(current_user),
     )
 
 
@@ -51,7 +59,7 @@ async def update_me(
     service = UserService(db)
     updated = await service.update_user(current_user.id, data)
     return success_response(
-        data=UserResponse.model_validate(updated).model_dump(mode="json"),
+        data=_user_response_data(updated),
         message="User profile updated successfully",
     )
 
@@ -81,7 +89,7 @@ async def upload_profile_image(
     service = UserService(db)
     updated = await service.update_profile_image(current_user.id, public_url)
     return success_response(
-        data=UserResponse.model_validate(updated).model_dump(mode="json"),
+        data=_user_response_data(updated),
         message="Profile image uploaded",
     )
 
@@ -98,7 +106,7 @@ async def remove_profile_image(
     service = UserService(db)
     updated = await service.clear_profile_image(current_user.id)
     return success_response(
-        data=UserResponse.model_validate(updated).model_dump(mode="json"),
+        data=_user_response_data(updated),
         message="Profile image removed",
     )
 
@@ -113,7 +121,7 @@ async def get_user(
     service = UserService(db)
     user = await service.get_user_by_id(user_id)
     return success_response(
-        data=UserResponse.model_validate(user).model_dump(mode="json"),
+        data=_user_response_data(user),
     )
 
 
@@ -128,10 +136,7 @@ async def list_users(
     service = UserService(db)
     users, total = await service.list_users(page=page, limit=limit)
     return paginated_response(
-        data=[
-            UserResponse.model_validate(user).model_dump(mode="json")
-            for user in users
-        ],
+        data=[_user_response_data(user) for user in users],
         page=page,
         limit=limit,
         total=total,

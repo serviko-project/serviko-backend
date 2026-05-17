@@ -9,6 +9,7 @@ from app.features.auth.dependencies import get_current_user, require_admin
 from app.features.providers.schemas import (
     DocumentUploadResponse,
     ProviderApplyCreate,
+    ProviderDetailsUpdate,
     ProviderListItem,
     ProviderReapplyUpdate,
     ProviderResponse,
@@ -17,6 +18,7 @@ from app.features.providers.schemas import (
 from app.features.providers.admin_service import ProviderAdminService
 from app.features.providers.document_service import ProviderDocumentService
 from app.features.providers.onboarding_service import ProviderOnboardingService
+from app.features.providers.provider_profile_service import ProviderProfileService
 from app.features.users.models import User
 from app.utils.enums import DocumentType, ProviderStatus
 
@@ -111,10 +113,62 @@ async def reapply(
     )
 
 
+# --- Provider Edit Endpoints ---
+
+
+# Update basic provider details
+@router.patch("/me", response_model=SuccessResponse[ProviderResponse])
+async def update_provider_details(
+    data: ProviderDetailsUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = ProviderProfileService(db)
+    profile = await service.update_details(current_user.id, data)
+    return success_response(
+        data=service.map_profile_to_response(profile),
+        message="Provider details updated",
+    )
+
+
+# Upload banner image
+@router.post("/me/banner", response_model=SuccessResponse[ProviderResponse])
+async def upload_banner_image(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    file_bytes = await file.read()
+    content_type = file.content_type or "application/octet-stream"
+
+    service = ProviderProfileService(db)
+    profile = await service.upload_banner(
+        current_user.id, file_bytes, content_type
+    )
+    return success_response(
+        data=service.map_profile_to_response(profile),
+        message="Banner image uploaded",
+    )
+
+
+# Delete banner image
+@router.delete("/me/banner", response_model=SuccessResponse[ProviderResponse])
+async def delete_banner_image(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = ProviderProfileService(db)
+    profile = await service.delete_banner(current_user.id)
+    return success_response(
+        data=service.map_profile_to_response(profile),
+        message="Banner image removed",
+    )
+
+
 # --- Admin Endpoints ---
 
 
-# List all provider applications 
+# List all provider applications
 @router.get("", response_model=PaginatedResponse[ProviderListItem])
 async def list_providers(
     page: int = Query(1, ge=1),
@@ -136,7 +190,7 @@ async def list_providers(
     )
 
 
-# Get a specific provider's full details 
+# Get a specific provider's full details
 @router.get("/{provider_id}", response_model=SuccessResponse[ProviderResponse])
 async def get_provider_detail(
     provider_id: uuid.UUID,
@@ -164,9 +218,9 @@ async def review_application(
         action=data.action,
         rejection_reason=data.rejection_reason,
     )
-    
+
     action_msg = "approved" if data.action.value == "approve" else f"{data.action.value}ed"
-    
+
     return success_response(
         data=service.map_profile_to_response(profile),
         message=f"Provider {action_msg} successfully",
