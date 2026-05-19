@@ -24,6 +24,8 @@ from app.features.providers.models import (
     ProviderService,
 )
 from app.features.users.models import User
+from app.features.bookings.models import Booking
+from app.features.support.models import FAQ, PrivacyPolicy
 
 config = context.config
 
