@@ -142,3 +142,18 @@ class ProviderListItem(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ProviderDirectoryItem(BaseModel):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    firebase_uid: str
+    user_name: str | None = None
+    user_profile_image_url: str | None = None
+    professional_title: str | None = None
+    about: str | None = None
+    banner_image_url: str | None = None
+    categories: list[str] = []
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

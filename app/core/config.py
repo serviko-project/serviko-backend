@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8080"
 
+    # ZegoCloud (real-time communication)
+    ZEGO_APP_ID: int = 0
+    ZEGO_SERVER_SECRET: str = ""
+
     # Supabase Storage
     SUPABASE_URL: str = ""
     SUPABASE_SERVICE_KEY: str = ""

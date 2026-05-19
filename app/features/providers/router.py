@@ -9,6 +9,7 @@ from app.features.auth.dependencies import get_current_user, require_admin
 from app.features.providers.schemas import (
     DocumentUploadResponse,
     ProviderApplyCreate,
+    ProviderDirectoryItem,
     ProviderDetailsUpdate,
     ProviderListItem,
     ProviderReapplyUpdate,
@@ -166,6 +167,29 @@ async def delete_banner_image(
 
 
 # --- Admin Endpoints ---
+
+
+@router.get("/directory", response_model=PaginatedResponse[ProviderDirectoryItem])
+async def list_provider_directory(
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = ProviderAdminService(db)
+    providers, total = await service.list_providers(
+        page=page,
+        limit=limit,
+        status_filter=ProviderStatus.APPROVED,
+        search=None,
+        exclude_user_id=current_user.id,
+    )
+    return paginated_response(
+        data=[service.map_directory_item(p) for p in providers],
+        page=page,
+        limit=limit,
+        total=total,
+    )
 
 
 # List all provider applications
