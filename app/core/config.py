@@ -39,6 +39,13 @@ class Settings(BaseSettings):
     ZEGO_APP_ID: int = 0
     ZEGO_SERVER_SECRET: str = ""
 
+    # Razorpay (Test Mode)
+    RAZORPAY_MODE: str = "test"
+    RAZORPAY_KEY_ID: str = ""
+    RAZORPAY_KEY_SECRET: str = ""
+    RAZORPAY_WEBHOOK_SECRET: str = ""
+    RAZORPAY_CURRENCY: str = "INR"
+
     # Supabase Storage
     SUPABASE_URL: str = ""
     SUPABASE_SERVICE_KEY: str = ""

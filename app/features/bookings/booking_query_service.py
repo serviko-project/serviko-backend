@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from datetime import datetime, timedelta, timezone
 
 from app.core.exceptions import ForbiddenException, NotFoundException
@@ -62,6 +62,7 @@ class BookingQueryService:
                 joinedload(Booking.provider).joinedload(ProviderProfile.user),
                 joinedload(Booking.service).joinedload(
                     ProviderService.category),
+                selectinload(Booking.payments),
             )
         )
 
@@ -100,6 +101,7 @@ class BookingQueryService:
                 joinedload(Booking.provider).joinedload(ProviderProfile.user),
                 joinedload(Booking.service).joinedload(
                     ProviderService.category),
+                selectinload(Booking.payments),
             )
         )
 
@@ -156,6 +158,7 @@ class BookingQueryService:
                 joinedload(Booking.provider).joinedload(ProviderProfile.user),
                 joinedload(Booking.service).joinedload(
                     ProviderService.category),
+                selectinload(Booking.payments),
             )
         )
         booking = result.scalar_one_or_none()
