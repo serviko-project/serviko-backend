@@ -74,3 +74,8 @@ class Booking(TimestampMixin, Base):
         "ProviderProfile", back_populates="bookings", lazy="selectin",
     )
     service = relationship("ProviderService", lazy="selectin")
+    payments = relationship(
+        "Payment",
+        back_populates="booking",
+        lazy="selectin",
+    )

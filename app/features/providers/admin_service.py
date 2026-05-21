@@ -25,6 +25,7 @@ class ProviderAdminService(ProviderBaseService):
         limit: int = 20,
         status_filter: ProviderStatus | None = None,
         search: str | None = None,
+        exclude_user_id: uuid.UUID | None = None,
     ) -> tuple[list[ProviderProfile], int]:
         limit = min(limit, 100)
         offset = (page - 1) * limit
@@ -35,6 +36,8 @@ class ProviderAdminService(ProviderBaseService):
         ]
         if status_filter:
             base_filter.append(ProviderProfile.status == status_filter.value)
+        if exclude_user_id:
+            base_filter.append(ProviderProfile.user_id != exclude_user_id)
 
         # Search by name, email, title or category
         if search and search.strip():
@@ -160,5 +163,26 @@ class ProviderAdminService(ProviderBaseService):
             "status": profile.status,
             "categories": categories,
             "submitted_at": profile.submitted_at,
+            "created_at": profile.created_at,
+        }
+
+    def map_directory_item(self, profile: ProviderProfile) -> dict:
+        user = profile.user
+        categories = []
+        for ps in (profile.services or []):
+            cat = ps.category
+            if cat:
+                categories.append(cat.title)
+
+        return {
+            "id": profile.id,
+            "user_id": profile.user_id,
+            "firebase_uid": user.firebase_uid if user else "",
+            "user_name": user.full_name if user else None,
+            "user_profile_image_url": user.profile_image_url if user else None,
+            "professional_title": profile.professional_title,
+            "about": profile.about,
+            "banner_image_url": profile.banner_image_url,
+            "categories": categories,
             "created_at": profile.created_at,
         }

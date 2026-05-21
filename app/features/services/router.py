@@ -21,6 +21,7 @@ def _map_service_detail(service) -> dict:
         "provider_id": service.provider_id,
         "provider_name": service.provider.user.full_name if service.provider and service.provider.user else "Unknown",
         "provider_image": service.provider.user.profile_image_url if service.provider and service.provider.user else None,
+        "provider_firebase_uid": service.provider.user.firebase_uid if service.provider and service.provider.user else None,
         "banner_image": service.provider.banner_image_url if service.provider else None,
         "professional_title": service.provider.professional_title if service.provider else None,
         "base_price_per_hour": service.base_price_per_hour or 0.0,

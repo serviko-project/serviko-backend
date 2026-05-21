@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ForbiddenException, ValidationException
 from app.features.bookings.booking_query_service import BookingQueryService
 from app.features.bookings.mappers import map_booking_to_detail_dict
+from app.features.payments.service import PaymentService
 
 
 class BookingActionService:
@@ -73,6 +74,8 @@ class BookingActionService:
         booking.status = "cancelled"
         booking.cancelled_at = datetime.now(timezone.utc)
         await self.db.flush()
+
+        await PaymentService(self.db).refund_paid_booking(booking)
         await self.db.refresh(booking)
 
         return map_booking_to_detail_dict(booking)

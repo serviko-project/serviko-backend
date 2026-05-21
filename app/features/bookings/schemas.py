@@ -38,11 +38,17 @@ class BookingListItem(BaseModel):
     customer_image: str | None = None
     provider_name: str | None = None
     provider_image: str | None = None
+    provider_firebase_uid: str | None = None
     category_name: str | None = None
     rejection_reason: str | None = None
     confirmed_at: datetime | None = None
     rejected_at: datetime | None = None
     cancelled_at: datetime | None = None
+    payment_status: str = "unpaid"
+    payment_id: uuid.UUID | None = None
+    payment_reference: str | None = None
+    paid_at: datetime | None = None
+    refunded_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -68,10 +74,16 @@ class BookingResponse(BaseModel):
     customer_image: str | None = None
     provider_name: str | None = None
     provider_image: str | None = None
+    provider_firebase_uid: str | None = None
     category_name: str | None = None
     confirmed_at: datetime | None = None
     rejected_at: datetime | None = None
     cancelled_at: datetime | None = None
+    payment_status: str = "unpaid"
+    payment_id: uuid.UUID | None = None
+    payment_reference: str | None = None
+    paid_at: datetime | None = None
+    refunded_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 

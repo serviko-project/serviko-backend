@@ -11,6 +11,7 @@ class ServiceResponse(BaseModel):
     provider_id: uuid.UUID
     provider_name: str
     provider_image: Optional[str] = None
+    provider_firebase_uid: Optional[str] = None
     banner_image: Optional[str] = None
     professional_title: Optional[str] = None
     base_price_per_hour: float
