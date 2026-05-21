@@ -38,6 +38,7 @@ class BookingListItem(BaseModel):
     customer_image: str | None = None
     provider_name: str | None = None
     provider_image: str | None = None
+    provider_firebase_uid: str | None = None
     category_name: str | None = None
     rejection_reason: str | None = None
     confirmed_at: datetime | None = None
@@ -73,6 +74,7 @@ class BookingResponse(BaseModel):
     customer_image: str | None = None
     provider_name: str | None = None
     provider_image: str | None = None
+    provider_firebase_uid: str | None = None
     category_name: str | None = None
     confirmed_at: datetime | None = None
     rejected_at: datetime | None = None

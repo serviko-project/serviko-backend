@@ -44,6 +44,10 @@ def map_booking_to_detail_dict(b: Booking) -> dict:
             b.provider.user.profile_image_url
             if b.provider and b.provider.user else None
         ),
+        "provider_firebase_uid": (
+            b.provider.user.firebase_uid
+            if b.provider and b.provider.user else None
+        ),
         "category_name": (
             b.service.category.title
             if b.service and b.service.category else None
@@ -81,6 +85,10 @@ def map_booking_to_list_item_dict(b: Booking) -> dict:
         ),
         "provider_image": (
             b.provider.user.profile_image_url
+            if b.provider and b.provider.user else None
+        ),
+        "provider_firebase_uid": (
+            b.provider.user.firebase_uid
             if b.provider and b.provider.user else None
         ),
         "category_name": (
