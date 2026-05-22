@@ -125,3 +125,6 @@ class BookingService(BookingBaseService):
 
     async def cancel_booking(self, booking_id: uuid.UUID, customer_id: uuid.UUID) -> dict:
         return await self.actions.cancel_booking(booking_id, customer_id)
+
+    async def complete_booking(self, booking_id: uuid.UUID, provider_user_id: uuid.UUID, completion_note: str | None) -> dict:
+        return await self.actions.complete_booking(booking_id, provider_user_id, completion_note)

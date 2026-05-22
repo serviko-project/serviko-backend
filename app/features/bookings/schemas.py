@@ -18,6 +18,10 @@ class BookingReviewUpdate(BaseModel):
     rejection_reason: str | None = Field(None, max_length=1000)
 
 
+class BookingCompleteUpdate(BaseModel):
+    completion_note: str | None = Field(None, max_length=1000)
+
+
 # Lightweight list item
 class BookingListItem(BaseModel):
     id: uuid.UUID
@@ -41,9 +45,11 @@ class BookingListItem(BaseModel):
     provider_firebase_uid: str | None = None
     category_name: str | None = None
     rejection_reason: str | None = None
+    completion_note: str | None = None
     confirmed_at: datetime | None = None
     rejected_at: datetime | None = None
     cancelled_at: datetime | None = None
+    completed_at: datetime | None = None
     payment_status: str = "unpaid"
     payment_id: uuid.UUID | None = None
     payment_reference: str | None = None
@@ -76,9 +82,12 @@ class BookingResponse(BaseModel):
     provider_image: str | None = None
     provider_firebase_uid: str | None = None
     category_name: str | None = None
+    rejection_reason: str | None = None
+    completion_note: str | None = None
     confirmed_at: datetime | None = None
     rejected_at: datetime | None = None
     cancelled_at: datetime | None = None
+    completed_at: datetime | None = None
     payment_status: str = "unpaid"
     payment_id: uuid.UUID | None = None
     payment_reference: str | None = None

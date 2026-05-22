@@ -64,9 +64,11 @@ class Booking(TimestampMixin, Base):
     customer_address: Mapped[str | None] = mapped_column(Text)
 
     rejection_reason: Mapped[str | None] = mapped_column(Text)
+    completion_note: Mapped[str | None] = mapped_column(Text)
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     rejected_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # Relationships
     customer = relationship("User", back_populates="bookings", lazy="selectin")

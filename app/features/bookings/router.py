@@ -14,6 +14,7 @@ from app.core.responses import (
 from app.features.auth.dependencies import get_current_user
 from app.features.bookings.schemas import (
     AvailableSlotsResponse,
+    BookingCompleteUpdate,
     BookingCreate,
     BookingListItem,
     BookingResponse,
@@ -119,4 +120,21 @@ async def cancel_booking(
 ):
     svc = BookingService(db)
     detail = await svc.cancel_booking(booking_id, current_user.id)
+    return success_response(data=detail)
+
+
+@router.patch(
+    "/{booking_id}/complete",
+    response_model=SuccessResponse[BookingResponse],
+)
+async def complete_booking(
+    booking_id: uuid.UUID,
+    body: BookingCompleteUpdate = BookingCompleteUpdate(),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    svc = BookingService(db)
+    detail = await svc.complete_booking(
+        booking_id, current_user.id, body.completion_note,
+    )
     return success_response(data=detail)

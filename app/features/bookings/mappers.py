@@ -55,6 +55,8 @@ def map_booking_to_detail_dict(b: Booking) -> dict:
         "confirmed_at": b.confirmed_at,
         "rejected_at": b.rejected_at,
         "cancelled_at": b.cancelled_at,
+        "completed_at": b.completed_at,
+        "completion_note": b.completion_note,
         "created_at": b.created_at,
         "updated_at": b.updated_at,
     }
@@ -99,6 +101,8 @@ def map_booking_to_list_item_dict(b: Booking) -> dict:
         "confirmed_at": b.confirmed_at,
         "rejected_at": b.rejected_at,
         "cancelled_at": b.cancelled_at,
+        "completed_at": b.completed_at,
+        "completion_note": b.completion_note,
         "created_at": b.created_at,
         "updated_at": b.updated_at,
     }
