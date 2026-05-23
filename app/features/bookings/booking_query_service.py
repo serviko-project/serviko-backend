@@ -63,6 +63,7 @@ class BookingQueryService:
                 joinedload(Booking.service).joinedload(
                     ProviderService.category),
                 selectinload(Booking.payments),
+                joinedload(Booking.promo_code),
             )
         )
 
@@ -102,6 +103,7 @@ class BookingQueryService:
                 joinedload(Booking.service).joinedload(
                     ProviderService.category),
                 selectinload(Booking.payments),
+                joinedload(Booking.promo_code),
             )
         )
 
@@ -159,6 +161,7 @@ class BookingQueryService:
                 joinedload(Booking.service).joinedload(
                     ProviderService.category),
                 selectinload(Booking.payments),
+                joinedload(Booking.promo_code),
             )
         )
         booking = result.scalar_one_or_none()

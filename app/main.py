@@ -17,6 +17,7 @@ from app.features.communication.router import router as communication_router
 from app.features.payments.router import router as payments_router
 from app.features.support.router import router as support_router
 from app.features.reviews.router import router as reviews_router
+from app.features.promo_codes.router import router as promo_codes_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -59,6 +60,7 @@ app.include_router(payments_router)
 app.include_router(communication_router)
 app.include_router(support_router)
 app.include_router(reviews_router)
+app.include_router(promo_codes_router)
 
 
 @app.get("/health", description="Health check endpoint to verify the API is running")

@@ -87,7 +87,24 @@ class BookingService(BookingBaseService):
 
         # Snapshot price and calculate total
         base_price = svc.base_price_per_hour or 0.0
-        total_price = base_price * duration_hours
+        original_price = base_price * duration_hours
+        total_price = original_price
+        discount_amount = 0.0
+        promo_code_id = None
+
+        promo_code_text = data.get("promo_code")
+        if promo_code_text:
+            from app.features.promo_codes.services import ValidationPromoService
+            promo_service = ValidationPromoService(self.db)
+            promo_res = await promo_service.validate_and_calculate(
+                code=promo_code_text,
+                provider_id=provider_id,
+                customer_id=customer_id,
+                subtotal=original_price,
+            )
+            promo_code_id = promo_res["promo_code_id"]
+            discount_amount = promo_res["estimated_discount"]
+            total_price = max(0.0, original_price - discount_amount)
 
         # Create booking
         booking = Booking(
@@ -101,6 +118,9 @@ class BookingService(BookingBaseService):
             end_time=end_time,
             base_price_per_hour=base_price,
             total_price=total_price,
+            original_price=original_price,
+            discount_amount=discount_amount,
+            promo_code_id=promo_code_id,
             customer_latitude=data.get("customer_latitude"),
             customer_longitude=data.get("customer_longitude"),
             customer_address=data.get("customer_address"),

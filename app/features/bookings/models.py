@@ -59,6 +59,15 @@ class Booking(TimestampMixin, Base):
     base_price_per_hour: Mapped[float] = mapped_column(Float, nullable=False)
     total_price: Mapped[float] = mapped_column(Float, nullable=False)
 
+    promo_code_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("promo_codes.id", ondelete="SET NULL"),
+    )
+    discount_amount: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0, server_default="0.0"
+    )
+    original_price: Mapped[float | None] = mapped_column(Float)
+
     customer_latitude: Mapped[float | None] = mapped_column(Float)
     customer_longitude: Mapped[float | None] = mapped_column(Float)
     customer_address: Mapped[str | None] = mapped_column(Text)
@@ -87,4 +96,5 @@ class Booking(TimestampMixin, Base):
         uselist=False,
         lazy="selectin",
     )
+    promo_code = relationship("PromoCode", lazy="selectin")
 

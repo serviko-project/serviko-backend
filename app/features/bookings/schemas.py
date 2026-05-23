@@ -11,6 +11,7 @@ class BookingCreate(BaseModel):
     customer_latitude: float | None = None
     customer_longitude: float | None = None
     customer_address: str | None = Field(None, max_length=500)
+    promo_code: str | None = Field(None, max_length=30)
 
 
 class BookingReviewUpdate(BaseModel):
@@ -35,6 +36,9 @@ class BookingListItem(BaseModel):
     duration_hours: int
     base_price_per_hour: float
     total_price: float
+    original_price: float | None = None
+    discount_amount: float = 0.0
+    promo_code_text: str | None = None
     customer_latitude: float | None = None
     customer_longitude: float | None = None
     customer_address: str | None = None
@@ -73,6 +77,9 @@ class BookingResponse(BaseModel):
     duration_hours: int
     base_price_per_hour: float
     total_price: float
+    original_price: float | None = None
+    discount_amount: float = 0.0
+    promo_code_text: str | None = None
     customer_latitude: float | None = None
     customer_longitude: float | None = None
     customer_address: str | None = None

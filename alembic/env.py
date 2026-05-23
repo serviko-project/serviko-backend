@@ -28,6 +28,7 @@ from app.features.bookings.models import Booking
 from app.features.payments.models import Payment
 from app.features.support.models import FAQ, PrivacyPolicy
 from app.features.reviews.models import Review
+from app.features.promo_codes.models import PromoCode
 
 
 config = context.config
