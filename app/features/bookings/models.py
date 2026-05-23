@@ -81,3 +81,10 @@ class Booking(TimestampMixin, Base):
         back_populates="booking",
         lazy="selectin",
     )
+    review = relationship(
+        "Review",
+        back_populates="booking",
+        uselist=False,
+        lazy="selectin",
+    )
+

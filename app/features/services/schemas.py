@@ -15,8 +15,8 @@ class ServiceResponse(BaseModel):
     banner_image: Optional[str] = None
     professional_title: Optional[str] = None
     base_price_per_hour: float
-    rating: float = 4.5
-    reviews_count: int = 100
+    rating: float
+    reviews_count: int
     years_of_experience: Optional[int] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None

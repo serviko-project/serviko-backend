@@ -55,6 +55,7 @@ class BookingListItem(BaseModel):
     payment_reference: str | None = None
     paid_at: datetime | None = None
     refunded_at: datetime | None = None
+    has_review: bool = False
     created_at: datetime
     updated_at: datetime
 
@@ -93,6 +94,7 @@ class BookingResponse(BaseModel):
     payment_reference: str | None = None
     paid_at: datetime | None = None
     refunded_at: datetime | None = None
+    has_review: bool = False
     created_at: datetime
     updated_at: datetime
 

@@ -57,6 +57,7 @@ def map_booking_to_detail_dict(b: Booking) -> dict:
         "cancelled_at": b.cancelled_at,
         "completed_at": b.completed_at,
         "completion_note": b.completion_note,
+        "has_review": b.review is not None,
         "created_at": b.created_at,
         "updated_at": b.updated_at,
     }
@@ -103,6 +104,7 @@ def map_booking_to_list_item_dict(b: Booking) -> dict:
         "cancelled_at": b.cancelled_at,
         "completed_at": b.completed_at,
         "completion_note": b.completion_note,
+        "has_review": b.review is not None,
         "created_at": b.created_at,
         "updated_at": b.updated_at,
     }

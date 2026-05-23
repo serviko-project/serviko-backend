@@ -13,6 +13,15 @@ router = APIRouter(prefix="/api/v1/services", tags=["Services"])
 
 
 def _map_service_detail(service) -> dict:
+    # Compute aggregate rating and reviews across all provider services
+    provider_services = service.provider.services if service.provider else []
+    total_reviews = sum(ps.reviews_count for ps in provider_services)
+    aggregate_rating = 0.0
+    if total_reviews > 0:
+        aggregate_rating = sum(
+            ps.rating * ps.reviews_count for ps in provider_services
+        ) / total_reviews
+
     data = {
         "id": service.id,
         "category_id": service.category_id,
@@ -25,8 +34,8 @@ def _map_service_detail(service) -> dict:
         "banner_image": service.provider.banner_image_url if service.provider else None,
         "professional_title": service.provider.professional_title if service.provider else None,
         "base_price_per_hour": service.base_price_per_hour or 0.0,
-        "rating": service.rating,
-        "reviews_count": service.reviews_count,
+        "rating": round(aggregate_rating, 2),
+        "reviews_count": total_reviews,
         "years_of_experience": service.provider.years_of_experience if service.provider else None,
         "latitude": service.provider.latitude if service.provider else None,
         "longitude": service.provider.longitude if service.provider else None,
@@ -36,8 +45,8 @@ def _map_service_detail(service) -> dict:
             {
                 "category_id": ps.category_id,
                 "category_name": ps.category.title,
-                "base_price_per_hour": ps.base_price_per_hour or 0.0
-            } for ps in service.provider.services if ps.category
+                "base_price_per_hour": ps.base_price_per_hour or 0.0,
+            } for ps in provider_services if ps.category
         ] if service.provider else []
     }
     return data
