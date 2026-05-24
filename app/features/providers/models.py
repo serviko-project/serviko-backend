@@ -74,6 +74,11 @@ class ProviderProfile(TimestampMixin, Base):
         back_populates="provider",
         lazy="noload",
     )
+    withdrawals = relationship(
+        "Withdrawal",
+        back_populates="provider",
+        lazy="noload",
+    )
 
 
 class ProviderService(TimestampMixin, Base):
