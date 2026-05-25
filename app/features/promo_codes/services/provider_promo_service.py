@@ -1,6 +1,7 @@
 import uuid
 
 from sqlalchemy import select, and_, func
+from sqlalchemy.orm import selectinload
 
 from app.core.exceptions import (
     ConflictException,
@@ -130,6 +131,64 @@ class ProviderPromoService(BasePromoService):
             self._to_response_dict(p, usage_counts.get(p.id, 0))
             for p in promos
         ]
+
+        return items, total
+
+    async def list_all_active_promos(
+        self,
+        current_user_id: uuid.UUID,
+        page: int,
+        limit: int,
+    ) -> tuple[list[dict], int]:
+        count_q = (
+            select(func.count(PromoCode.id))
+            .join(ProviderProfile, PromoCode.provider_id == ProviderProfile.id)
+            .where(
+                and_(
+                    PromoCode.is_active == True,
+                    ProviderProfile.user_id != current_user_id,
+                )
+            )
+        )
+        total = (await self.db.execute(count_q)).scalar() or 0
+
+        q = (
+            select(PromoCode)
+            .join(ProviderProfile, PromoCode.provider_id == ProviderProfile.id)
+            .where(
+                and_(
+                    PromoCode.is_active == True,
+                    ProviderProfile.user_id != current_user_id,
+                )
+            )
+            .options(
+                selectinload(PromoCode.provider)
+                .selectinload(ProviderProfile.user),
+                selectinload(PromoCode.provider)
+                .selectinload(ProviderProfile.services)
+            )
+            .order_by(PromoCode.created_at.desc())
+            .offset((page - 1) * limit)
+            .limit(limit)
+        )
+        result = await self.db.execute(q)
+        promos = result.scalars().all()
+
+        usage_counts = await self._get_usage_counts_batch([p.id for p in promos])
+        items = []
+        for p in promos:
+            item = self._to_response_dict(p, usage_counts.get(p.id, 0))
+            if p.provider:
+                item["provider_name"] = p.provider.user.full_name if p.provider.user else "Unknown"
+                item["provider_title"] = p.provider.professional_title or "Professional"
+                item["provider_image"] = p.provider.user.profile_image_url if p.provider.user else None
+                item["service_id"] = p.provider.services[0].id if p.provider.services else None
+            else:
+                item["provider_name"] = "Unknown"
+                item["provider_title"] = "Professional"
+                item["provider_image"] = None
+                item["service_id"] = None
+            items.append(item)
 
         return items, total
 

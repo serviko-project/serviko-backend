@@ -17,6 +17,7 @@ from app.features.promo_codes.schemas import (
     PromoCodeUpdate,
     PromoCodeValidateRequest,
     PromoCodeValidateResponse,
+    ActivePromoCodeResponse,
 )
 from app.features.promo_codes.services import ProviderPromoService, ValidationPromoService
 from app.features.users.models import User
@@ -48,6 +49,18 @@ async def list_promo_codes(
         items, total = await svc.list_promos_by_provider_id(provider_id, page, limit)
     else:
         items, total = await svc.list_provider_promos(current_user.id, page, limit)
+    return paginated_response(data=items, page=page, limit=limit, total=total)
+
+
+@router.get("/active", response_model=PaginatedResponse[ActivePromoCodeResponse])
+async def list_active_promo_codes(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=50),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    svc = ProviderPromoService(db)
+    items, total = await svc.list_all_active_promos(current_user.id, page, limit)
     return paginated_response(data=items, page=page, limit=limit, total=total)
 
 

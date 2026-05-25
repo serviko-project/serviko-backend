@@ -42,6 +42,13 @@ class PromoCodeResponse(BaseModel):
     updated_at: datetime
 
 
+class ActivePromoCodeResponse(PromoCodeResponse):
+    provider_name: str | None = None
+    provider_title: str | None = None
+    provider_image: str | None = None
+    service_id: uuid.UUID | None = None
+
+
 class PromoCodeValidateRequest(BaseModel):
     code: str = Field(..., min_length=1, max_length=30)
     service_id: uuid.UUID
