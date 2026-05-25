@@ -15,6 +15,7 @@ from app.features.providers.schemas import (
     ProviderReapplyUpdate,
     ProviderResponse,
     ProviderReviewUpdate,
+    ProviderDashboardStatsResponse,
 )
 from app.features.providers.admin_service import ProviderAdminService
 from app.features.providers.document_service import ProviderDocumentService
@@ -55,6 +56,18 @@ async def get_my_provider_profile(
     return success_response(
         data=service.map_profile_to_response(profile),
     )
+
+
+# Get provider dashboard stats
+@router.get("/dashboard", response_model=SuccessResponse[ProviderDashboardStatsResponse])
+async def get_provider_dashboard_stats(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = ProviderProfileService(db)
+    stats = await service.get_dashboard_stats(current_user.id)
+    return success_response(data=stats)
+
 
 
 # Upload a verification document

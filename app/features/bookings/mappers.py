@@ -39,6 +39,7 @@ def map_booking_to_detail_dict(b: Booking) -> dict:
         "rejection_reason": b.rejection_reason,
         "customer_name": b.customer.full_name if b.customer else None,
         "customer_image": b.customer.profile_image_url if b.customer else None,
+        "customer_firebase_uid": b.customer.firebase_uid if b.customer else None,
         "provider_name": (
             b.provider.user.full_name
             if b.provider and b.provider.user else None
@@ -88,6 +89,7 @@ def map_booking_to_list_item_dict(b: Booking) -> dict:
         "customer_address": b.customer_address,
         "customer_name": b.customer.full_name if b.customer else None,
         "customer_image": b.customer.profile_image_url if b.customer else None,
+        "customer_firebase_uid": b.customer.firebase_uid if b.customer else None,
         "provider_name": (
             b.provider.user.full_name
             if b.provider and b.provider.user else None
