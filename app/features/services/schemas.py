@@ -20,6 +20,7 @@ class ServiceResponse(BaseModel):
     years_of_experience: Optional[int] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    is_bookmarked: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 

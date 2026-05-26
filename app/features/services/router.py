@@ -8,11 +8,12 @@ from app.features.services.schemas import ServiceResponse, ServiceDetailResponse
 from app.features.services.service import SearchService
 from app.features.auth.dependencies import get_current_user
 from app.features.users.models import User
+from app.features.bookmarks.service import BookmarkService
 
 router = APIRouter(prefix="/api/v1/services", tags=["Services"])
 
 
-def _map_service_detail(service) -> dict:
+def _map_service_detail(service, bookmarked_ids: set[uuid.UUID] = None) -> dict:
     # Compute aggregate rating and reviews across all provider services
     provider_services = service.provider.services if service.provider else []
     total_reviews = sum(ps.reviews_count for ps in provider_services)
@@ -39,6 +40,7 @@ def _map_service_detail(service) -> dict:
         "years_of_experience": service.provider.years_of_experience if service.provider else None,
         "latitude": service.provider.latitude if service.provider else None,
         "longitude": service.provider.longitude if service.provider else None,
+        "is_bookmarked": service.id in bookmarked_ids if bookmarked_ids else False,
         "about": service.provider.about if service.provider else None,
         "gallery_images": [],
         "all_categories": [
@@ -80,8 +82,11 @@ async def list_services(
         max_experience
     )
 
+    bookmark_service = BookmarkService(db)
+    bookmarked_ids = await bookmark_service.get_user_bookmarked_ids(current_user.id)
+
     return paginated_response(
-        data=[_map_service_detail(s) for s in services],
+        data=[_map_service_detail(s, bookmarked_ids) for s in services],
         page=page,
         limit=limit,
         total=total
@@ -97,8 +102,11 @@ async def list_popular_services(
     service = SearchService(db)
     services = await service.list_popular_services(current_user.id, category_id)
 
+    bookmark_service = BookmarkService(db)
+    bookmarked_ids = await bookmark_service.get_user_bookmarked_ids(current_user.id)
+
     return success_response(
-        data=[_map_service_detail(s) for s in services]
+        data=[_map_service_detail(s, bookmarked_ids) for s in services]
     )
 
 
@@ -111,6 +119,9 @@ async def get_service_detail(
     service = SearchService(db)
     s = await service.get_service_detail(service_id)
 
+    bookmark_service = BookmarkService(db)
+    bookmarked_ids = await bookmark_service.get_user_bookmarked_ids(current_user.id)
+
     return success_response(
-        data=_map_service_detail(s)
+        data=_map_service_detail(s, bookmarked_ids)
     )

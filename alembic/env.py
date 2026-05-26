@@ -30,6 +30,7 @@ from app.features.support.models import FAQ, PrivacyPolicy
 from app.features.reviews.models import Review
 from app.features.promo_codes.models import PromoCode
 from app.features.earnings.models import Withdrawal
+from app.features.bookmarks.models import Bookmark
 
 
 config = context.config
