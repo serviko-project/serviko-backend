@@ -142,3 +142,32 @@ class SearchService:
             raise NotFoundException("Service not found")
 
         return service
+
+    async def get_price_range(self, category_id: uuid.UUID | None = None) -> dict:
+        query = (
+            select(
+                func.min(ProviderService.base_price_per_hour).label("min_price"),
+                func.max(ProviderService.base_price_per_hour).label("max_price")
+            )
+            .join(ProviderService.provider)
+            .join(ProviderService.category)
+            .where(ProviderProfile.status == "approved")
+            .where(ProviderProfile.is_deleted == False)
+            .where(Category.status == "active")
+        )
+        if category_id:
+            query = query.where(ProviderService.category_id == category_id)
+
+        result = await self.db.execute(query)
+        row = result.fetchone()
+
+        min_price = row.min_price if row and row.min_price is not None else 0.0
+        max_price = row.max_price if row and row.max_price is not None else 500.0
+
+        if min_price == max_price:
+            if min_price == 0:
+                max_price = 500.0
+            else:
+                max_price = min_price + 100.0
+
+        return {"min_price": float(min_price), "max_price": float(max_price)}

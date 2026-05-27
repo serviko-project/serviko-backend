@@ -110,6 +110,17 @@ async def list_popular_services(
     )
 
 
+@router.get("/price-range", response_model=SuccessResponse[dict])
+async def get_price_range(
+    category_id: uuid.UUID | None = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    service = SearchService(db)
+    price_range = await service.get_price_range(category_id)
+    return success_response(data=price_range)
+
+
 @router.get("/{service_id}", response_model=SuccessResponse[ServiceDetailResponse])
 async def get_service_detail(
     service_id: uuid.UUID,

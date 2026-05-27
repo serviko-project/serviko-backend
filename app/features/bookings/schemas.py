@@ -113,4 +113,5 @@ class AvailableSlotsResponse(BaseModel):
     date: date
     provider_id: uuid.UUID
     slots: list[str]
+    all_slots: list[str] = []
     max_duration_from_slot: dict[str, int] = {}
