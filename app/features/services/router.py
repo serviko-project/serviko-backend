@@ -8,11 +8,21 @@ from app.features.services.schemas import ServiceResponse, ServiceDetailResponse
 from app.features.services.service import SearchService
 from app.features.auth.dependencies import get_current_user
 from app.features.users.models import User
+from app.features.bookmarks.service import BookmarkService
 
 router = APIRouter(prefix="/api/v1/services", tags=["Services"])
 
 
-def _map_service_detail(service) -> dict:
+def _map_service_detail(service, bookmarked_ids: set[uuid.UUID] = None) -> dict:
+    # Compute aggregate rating and reviews across all provider services
+    provider_services = service.provider.services if service.provider else []
+    total_reviews = sum(ps.reviews_count for ps in provider_services)
+    aggregate_rating = 0.0
+    if total_reviews > 0:
+        aggregate_rating = sum(
+            ps.rating * ps.reviews_count for ps in provider_services
+        ) / total_reviews
+
     data = {
         "id": service.id,
         "category_id": service.category_id,
@@ -25,19 +35,20 @@ def _map_service_detail(service) -> dict:
         "banner_image": service.provider.banner_image_url if service.provider else None,
         "professional_title": service.provider.professional_title if service.provider else None,
         "base_price_per_hour": service.base_price_per_hour or 0.0,
-        "rating": service.rating,
-        "reviews_count": service.reviews_count,
+        "rating": round(aggregate_rating, 2),
+        "reviews_count": total_reviews,
         "years_of_experience": service.provider.years_of_experience if service.provider else None,
         "latitude": service.provider.latitude if service.provider else None,
         "longitude": service.provider.longitude if service.provider else None,
+        "is_bookmarked": service.id in bookmarked_ids if bookmarked_ids else False,
         "about": service.provider.about if service.provider else None,
         "gallery_images": [],
         "all_categories": [
             {
                 "category_id": ps.category_id,
                 "category_name": ps.category.title,
-                "base_price_per_hour": ps.base_price_per_hour or 0.0
-            } for ps in service.provider.services if ps.category
+                "base_price_per_hour": ps.base_price_per_hour or 0.0,
+            } for ps in provider_services if ps.category
         ] if service.provider else []
     }
     return data
@@ -71,8 +82,11 @@ async def list_services(
         max_experience
     )
 
+    bookmark_service = BookmarkService(db)
+    bookmarked_ids = await bookmark_service.get_user_bookmarked_ids(current_user.id)
+
     return paginated_response(
-        data=[_map_service_detail(s) for s in services],
+        data=[_map_service_detail(s, bookmarked_ids) for s in services],
         page=page,
         limit=limit,
         total=total
@@ -82,15 +96,35 @@ async def list_services(
 @router.get("/popular", response_model=SuccessResponse[list[ServiceResponse]])
 async def list_popular_services(
     category_id: uuid.UUID | None = Query(None),
+    limit: int | None = Query(None, ge=1),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    final_limit = min(limit, 100) if limit is not None else 100
+    service = SearchService(db)
+    services = await service.list_popular_services(
+        current_user.id,
+        category_id,
+        limit=final_limit
+    )
+
+    bookmark_service = BookmarkService(db)
+    bookmarked_ids = await bookmark_service.get_user_bookmarked_ids(current_user.id)
+
+    return success_response(
+        data=[_map_service_detail(s, bookmarked_ids) for s in services]
+    )
+
+
+@router.get("/price-range", response_model=SuccessResponse[dict])
+async def get_price_range(
+    category_id: uuid.UUID | None = Query(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     service = SearchService(db)
-    services = await service.list_popular_services(current_user.id, category_id)
-
-    return success_response(
-        data=[_map_service_detail(s) for s in services]
-    )
+    price_range = await service.get_price_range(category_id)
+    return success_response(data=price_range)
 
 
 @router.get("/{service_id}", response_model=SuccessResponse[ServiceDetailResponse])
@@ -102,6 +136,9 @@ async def get_service_detail(
     service = SearchService(db)
     s = await service.get_service_detail(service_id)
 
+    bookmark_service = BookmarkService(db)
+    bookmarked_ids = await bookmark_service.get_user_bookmarked_ids(current_user.id)
+
     return success_response(
-        data=_map_service_detail(s)
+        data=_map_service_detail(s, bookmarked_ids)
     )

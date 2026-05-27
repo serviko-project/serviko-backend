@@ -36,3 +36,9 @@ class User(TimestampMixin, Base):
         back_populates="customer",
         lazy="noload",
     )
+    bookmarks = relationship(
+        "Bookmark",
+        back_populates="user",
+        lazy="noload",
+        cascade="all, delete-orphan",
+    )

@@ -59,14 +59,25 @@ class Booking(TimestampMixin, Base):
     base_price_per_hour: Mapped[float] = mapped_column(Float, nullable=False)
     total_price: Mapped[float] = mapped_column(Float, nullable=False)
 
+    promo_code_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("promo_codes.id", ondelete="SET NULL"),
+    )
+    discount_amount: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0, server_default="0.0"
+    )
+    original_price: Mapped[float | None] = mapped_column(Float)
+
     customer_latitude: Mapped[float | None] = mapped_column(Float)
     customer_longitude: Mapped[float | None] = mapped_column(Float)
     customer_address: Mapped[str | None] = mapped_column(Text)
 
     rejection_reason: Mapped[str | None] = mapped_column(Text)
+    completion_note: Mapped[str | None] = mapped_column(Text)
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     rejected_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # Relationships
     customer = relationship("User", back_populates="bookings", lazy="selectin")
@@ -79,3 +90,11 @@ class Booking(TimestampMixin, Base):
         back_populates="booking",
         lazy="selectin",
     )
+    review = relationship(
+        "Review",
+        back_populates="booking",
+        uselist=False,
+        lazy="selectin",
+    )
+    promo_code = relationship("PromoCode", lazy="selectin")
+

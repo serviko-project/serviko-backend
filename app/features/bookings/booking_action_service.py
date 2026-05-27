@@ -79,3 +79,42 @@ class BookingActionService:
         await self.db.refresh(booking)
 
         return map_booking_to_detail_dict(booking)
+
+    async def complete_booking(
+        self,
+        booking_id: uuid.UUID,
+        provider_user_id: uuid.UUID,
+        completion_note: str | None,
+    ) -> dict:
+        booking = await self.query_service._get_booking_with_joins(booking_id)
+
+        if booking.provider.user_id != provider_user_id:
+            raise ForbiddenException("You can only complete your own bookings")
+
+        if booking.status != "confirmed":
+            raise ValidationException(
+                f"Cannot complete a booking with status '{booking.status}'"
+            )
+
+        # Only allow completion if payment is captured
+        latest_payment = None
+        if booking.payments:
+            payments = sorted(
+                booking.payments, key=lambda p: p.created_at, reverse=True,
+            )
+            latest_payment = payments[0]
+
+        if not latest_payment or latest_payment.status != "paid":
+            raise ValidationException(
+                "Cannot complete a booking that has not been paid"
+            )
+
+        booking.status = "completed"
+        booking.completed_at = datetime.now(timezone.utc)
+        if completion_note and completion_note.strip():
+            booking.completion_note = completion_note.strip()
+
+        await self.db.flush()
+        await self.db.refresh(booking)
+
+        return map_booking_to_detail_dict(booking)

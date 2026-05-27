@@ -74,6 +74,11 @@ class ProviderProfile(TimestampMixin, Base):
         back_populates="provider",
         lazy="noload",
     )
+    withdrawals = relationship(
+        "Withdrawal",
+        back_populates="provider",
+        lazy="noload",
+    )
 
 
 class ProviderService(TimestampMixin, Base):
@@ -101,6 +106,12 @@ class ProviderService(TimestampMixin, Base):
     # Relationships
     provider = relationship("ProviderProfile", back_populates="services")
     category = relationship("Category", lazy="selectin")
+    bookmarks = relationship(
+        "Bookmark",
+        back_populates="service",
+        lazy="noload",
+        cascade="all, delete-orphan",
+    )
 
 
 class ProviderAvailability(TimestampMixin, Base):

@@ -4,6 +4,8 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from app.utils.enums import ReviewAction
+from app.features.bookings.schemas import BookingListItem
+
 
 
 # Per-category service input with pricing
@@ -157,3 +159,12 @@ class ProviderDirectoryItem(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ProviderDashboardStatsResponse(BaseModel):
+    today_earnings: float
+    active_jobs_count: int
+    new_requests_count: int
+    rating: float
+    next_job: "BookingListItem | None" = None
+

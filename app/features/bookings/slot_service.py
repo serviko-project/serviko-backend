@@ -29,7 +29,13 @@ class SlotService:
         availability = await self._get_day_availability(provider_id, day_of_week)
 
         if not availability or not availability.is_enabled:
-            return {"date": target_date, "provider_id": provider_id, "slots": [], "max_duration_from_slot": {}}
+            return {
+                "date": target_date,
+                "provider_id": provider_id,
+                "slots": [],
+                "all_slots": [],
+                "max_duration_from_slot": {},
+            }
 
         start_hour = availability.start_time.hour
         end_hour = availability.end_time.hour
@@ -65,6 +71,7 @@ class SlotService:
             "date": target_date,
             "provider_id": provider_id,
             "slots": free_slots,
+            "all_slots": all_slots,
             "max_duration_from_slot": max_duration_map,
         }
 

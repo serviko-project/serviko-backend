@@ -30,12 +30,16 @@ def map_booking_to_detail_dict(b: Booking) -> dict:
         "duration_hours": b.duration_hours,
         "base_price_per_hour": b.base_price_per_hour,
         "total_price": b.total_price,
+        "original_price": b.original_price,
+        "discount_amount": b.discount_amount,
+        "promo_code_text": b.promo_code.code if b.promo_code else None,
         "customer_latitude": b.customer_latitude,
         "customer_longitude": b.customer_longitude,
         "customer_address": b.customer_address,
         "rejection_reason": b.rejection_reason,
         "customer_name": b.customer.full_name if b.customer else None,
         "customer_image": b.customer.profile_image_url if b.customer else None,
+        "customer_firebase_uid": b.customer.firebase_uid if b.customer else None,
         "provider_name": (
             b.provider.user.full_name
             if b.provider and b.provider.user else None
@@ -55,6 +59,9 @@ def map_booking_to_detail_dict(b: Booking) -> dict:
         "confirmed_at": b.confirmed_at,
         "rejected_at": b.rejected_at,
         "cancelled_at": b.cancelled_at,
+        "completed_at": b.completed_at,
+        "completion_note": b.completion_note,
+        "has_review": b.review is not None,
         "created_at": b.created_at,
         "updated_at": b.updated_at,
     }
@@ -74,11 +81,15 @@ def map_booking_to_list_item_dict(b: Booking) -> dict:
         "duration_hours": b.duration_hours,
         "base_price_per_hour": b.base_price_per_hour,
         "total_price": b.total_price,
+        "original_price": b.original_price,
+        "discount_amount": b.discount_amount,
+        "promo_code_text": b.promo_code.code if b.promo_code else None,
         "customer_latitude": b.customer_latitude,
         "customer_longitude": b.customer_longitude,
         "customer_address": b.customer_address,
         "customer_name": b.customer.full_name if b.customer else None,
         "customer_image": b.customer.profile_image_url if b.customer else None,
+        "customer_firebase_uid": b.customer.firebase_uid if b.customer else None,
         "provider_name": (
             b.provider.user.full_name
             if b.provider and b.provider.user else None
@@ -99,6 +110,9 @@ def map_booking_to_list_item_dict(b: Booking) -> dict:
         "confirmed_at": b.confirmed_at,
         "rejected_at": b.rejected_at,
         "cancelled_at": b.cancelled_at,
+        "completed_at": b.completed_at,
+        "completion_note": b.completion_note,
+        "has_review": b.review is not None,
         "created_at": b.created_at,
         "updated_at": b.updated_at,
     }
