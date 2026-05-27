@@ -96,11 +96,17 @@ async def list_services(
 @router.get("/popular", response_model=SuccessResponse[list[ServiceResponse]])
 async def list_popular_services(
     category_id: uuid.UUID | None = Query(None),
+    limit: int | None = Query(None, ge=1),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    final_limit = min(limit, 100) if limit is not None else 100
     service = SearchService(db)
-    services = await service.list_popular_services(current_user.id, category_id)
+    services = await service.list_popular_services(
+        current_user.id,
+        category_id,
+        limit=final_limit
+    )
 
     bookmark_service = BookmarkService(db)
     bookmarked_ids = await bookmark_service.get_user_bookmarked_ids(current_user.id)

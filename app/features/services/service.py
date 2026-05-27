@@ -89,12 +89,37 @@ class SearchService:
 
         return list(services), total
 
-    async def list_popular_services(self, current_user_id: uuid.UUID, category_id: uuid.UUID | None = None) -> List[ProviderService]:
+    async def list_popular_services(
+        self,
+        current_user_id: uuid.UUID,
+        category_id: uuid.UUID | None = None,
+        limit: int | None = None
+    ) -> List[ProviderService]:
+        # Subquery to calculate provider-level total reviews and average rating
+        provider_stats = (
+            select(
+                ProviderService.provider_id,
+                func.sum(ProviderService.reviews_count).label(
+                    "provider_total_reviews"),
+                func.coalesce(
+                    func.sum(ProviderService.rating * ProviderService.reviews_count) /
+                    func.nullif(func.sum(ProviderService.reviews_count), 0),
+                    0.0
+                ).label("provider_avg_rating")
+            )
+            .group_by(ProviderService.provider_id)
+            .subquery()
+        )
+
         query = (
             select(ProviderService)
             .join(ProviderService.provider)
             .join(ProviderService.category)
             .join(ProviderProfile.user)
+            .join(
+                provider_stats,
+                ProviderService.provider_id == provider_stats.c.provider_id
+            )
             .where(ProviderProfile.status == "approved")
             .where(ProviderProfile.is_deleted == False)
             .where(Category.status == "active")
@@ -104,7 +129,14 @@ class SearchService:
         if category_id:
             query = query.where(ProviderService.category_id == category_id)
 
-        query = query.limit(5)
+        # Sort primarily by provider aggregate reviews count descending, then by aggregate rating descending
+        query = query.order_by(
+            provider_stats.c.provider_total_reviews.desc(),
+            provider_stats.c.provider_avg_rating.desc()
+        )
+
+        if limit is not None:
+            query = query.limit(limit)
 
         query = query.options(
             joinedload(ProviderService.category),
@@ -146,8 +178,10 @@ class SearchService:
     async def get_price_range(self, category_id: uuid.UUID | None = None) -> dict:
         query = (
             select(
-                func.min(ProviderService.base_price_per_hour).label("min_price"),
-                func.max(ProviderService.base_price_per_hour).label("max_price")
+                func.min(ProviderService.base_price_per_hour).label(
+                    "min_price"),
+                func.max(ProviderService.base_price_per_hour).label(
+                    "max_price")
             )
             .join(ProviderService.provider)
             .join(ProviderService.category)
