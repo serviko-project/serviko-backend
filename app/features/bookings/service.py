@@ -61,7 +61,7 @@ class BookingService(BookingBaseService):
             raise ValidationException("Cannot book a past date")
 
         # Check provider availability for this day
-        day_of_week = scheduled_date.weekday()
+        day_of_week = scheduled_date.isoweekday()
         availability = await self._get_day_availability(provider_id, day_of_week)
 
         if not availability or not availability.is_enabled:

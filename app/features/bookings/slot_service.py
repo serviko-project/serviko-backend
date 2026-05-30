@@ -25,7 +25,7 @@ class SlotService:
         await self._get_approved_provider(provider_id)
 
         # Get availability for the day of week
-        day_of_week = target_date.weekday()
+        day_of_week = target_date.isoweekday()
         availability = await self._get_day_availability(provider_id, day_of_week)
 
         if not availability or not availability.is_enabled:

@@ -4,8 +4,9 @@ from app.core.exceptions import ForbiddenException, NotFoundException
 from app.core.storage import StorageBucket, delete_file, upload_file
 from app.features.providers.base_service import ProviderBaseService
 from app.features.providers.models import ProviderProfile
-from app.features.providers.schemas import ProviderDetailsUpdate
+from app.features.providers.schemas import ProviderDetailsUpdate, ServiceCategoryInput, AvailabilitySlotCreate
 from app.utils.enums import ProviderStatus
+
 
 
 class ProviderProfileService(ProviderBaseService):
@@ -159,3 +160,46 @@ class ProviderProfileService(ProviderBaseService):
             "rating": rating,
             "next_job": next_job_data
         }
+
+    # Update provider services
+    async def update_services(
+        self, user_id: uuid.UUID, services_data: list[ServiceCategoryInput]
+    ) -> ProviderProfile:
+        profile = await self._get_profile_by_user_id(user_id)
+        if not profile:
+            raise NotFoundException("No provider profile found")
+
+        if profile.status != ProviderStatus.APPROVED.value:
+            raise ForbiddenException(
+                "Only approved providers can edit their services"
+            )
+
+        # Validate categories
+        category_ids = [sc.category_id for sc in services_data]
+        await self._validate_categories(category_ids)
+
+        # Sync services
+        await self._sync_services(profile.id, services_data)
+
+        await self.db.flush()
+        return await self._get_profile_by_user_id(user_id)
+
+    # Update provider availability
+    async def update_availability(
+        self, user_id: uuid.UUID, availability_data: list[AvailabilitySlotCreate]
+    ) -> ProviderProfile:
+        profile = await self._get_profile_by_user_id(user_id)
+        if not profile:
+            raise NotFoundException("No provider profile found")
+
+        if profile.status != ProviderStatus.APPROVED.value:
+            raise ForbiddenException(
+                "Only approved providers can edit their availability"
+            )
+
+        # Sync availability
+        await self._sync_availability(profile.id, availability_data)
+
+        await self.db.flush()
+        return await self._get_profile_by_user_id(user_id)
+
