@@ -100,3 +100,22 @@ class ReviewService:
         result = await self.db.execute(query)
         reviews = result.scalars().all()
         return reviews, total
+
+    async def get_provider_reviews_stats(self, provider_id: uuid.UUID) -> dict:
+        stmt = select(
+            func.coalesce(func.avg(Review.rating), 0.0).label("avg_rating"),
+            func.count(Review.id).label("total_count")
+        ).where(Review.provider_id == provider_id)
+
+        res = await self.db.execute(stmt)
+        row = res.one()
+
+        avg_rating = float(
+            row.avg_rating) if row and row.avg_rating is not None else 0.0
+        total_count = int(
+            row.total_count) if row and row.total_count is not None else 0
+
+        return {
+            "average_rating": avg_rating,
+            "total_reviews": total_count
+        }
