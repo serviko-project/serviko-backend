@@ -1,13 +1,17 @@
 import uuid
 from datetime import time
-from sqlalchemy import select
+from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.exceptions import ValidationException
+from app.features.categories.models import Category
 from app.features.providers.models import (
     ProviderProfile,
     ProviderService,
+    ProviderAvailability,
 )
+from app.features.providers.schemas import ServiceCategoryInput
 
 
 class ProviderBaseService:
@@ -118,3 +122,49 @@ class ProviderBaseService:
             "file_url": signed_url,
             "original_filename": doc.original_filename,
         }
+
+    async def _validate_categories(self, category_ids: list[uuid.UUID]):
+        cat_result = await self.db.execute(
+            select(func.count(Category.id)).where(
+                Category.id.in_(category_ids),
+                Category.is_deleted == False,
+            )
+        )
+        valid_count = cat_result.scalar_one()
+        if valid_count != len(category_ids):
+            raise ValidationException(
+                "One or more selected categories are invalid")
+
+    async def _sync_services(
+        self, provider_id: uuid.UUID, service_categories: list[ServiceCategoryInput]
+    ):
+        await self.db.execute(
+            delete(ProviderService).where(
+                ProviderService.provider_id == provider_id
+            )
+        )
+        for sc in service_categories:
+            self.db.add(
+                ProviderService(
+                    provider_id=provider_id,
+                    category_id=sc.category_id,
+                    base_price_per_hour=sc.base_price_per_hour,
+                )
+            )
+
+    async def _sync_availability(self, provider_id: uuid.UUID, availability_data: list):
+        await self.db.execute(
+            delete(ProviderAvailability).where(
+                ProviderAvailability.provider_id == provider_id
+            )
+        )
+        for slot in availability_data:
+            self.db.add(
+                ProviderAvailability(
+                    provider_id=provider_id,
+                    day_of_week=slot.day_of_week,
+                    is_enabled=slot.is_enabled,
+                    start_time=self._parse_time(slot.start_time),
+                    end_time=self._parse_time(slot.end_time),
+                )
+            )

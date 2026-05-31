@@ -8,6 +8,7 @@ from app.features.bookings.base_service import BookingBaseService
 from app.features.bookings.slot_service import SlotService
 from app.features.bookings.booking_query_service import BookingQueryService
 from app.features.bookings.booking_action_service import BookingActionService
+from app.features.notifications.service import NotificationService
 
 
 class BookingService(BookingBaseService):
@@ -18,6 +19,7 @@ class BookingService(BookingBaseService):
         self.slots = SlotService(db)
         self.queries = BookingQueryService(db, self.BOOKING_EXPIRATION_HOURS)
         self.actions = BookingActionService(db, self.queries)
+        self.notifications = NotificationService(db)
 
     async def get_available_slots(
         self,
@@ -61,7 +63,7 @@ class BookingService(BookingBaseService):
             raise ValidationException("Cannot book a past date")
 
         # Check provider availability for this day
-        day_of_week = scheduled_date.weekday()
+        day_of_week = scheduled_date.isoweekday()
         availability = await self._get_day_availability(provider_id, day_of_week)
 
         if not availability or not availability.is_enabled:
@@ -128,6 +130,17 @@ class BookingService(BookingBaseService):
         self.db.add(booking)
         await self.db.flush()
         await self.db.refresh(booking)
+
+        # Notify the provider about the new booking request
+        customer_name = booking.customer.full_name if booking.customer else "A customer"
+        service_name = booking.service.category.title if booking.service and booking.service.category else "Service"
+        await self.notifications.send_to_user(
+            user_id=provider.user_id,
+            title="New Booking Request 📋",
+            body=f"{customer_name} requested a {service_name} booking on {booking.scheduled_date}.",
+            notification_type="booking_new",
+            data={"booking_id": str(booking.id)},
+        )
 
         return booking
 

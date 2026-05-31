@@ -20,11 +20,9 @@ from app.features.reviews.router import router as reviews_router
 from app.features.promo_codes.router import router as promo_codes_router
 from app.features.earnings.router import router as earnings_router
 from app.features.bookmarks.router import router as bookmarks_router
+from app.features.notifications.router import router as notifications_router
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -65,6 +63,7 @@ app.include_router(reviews_router)
 app.include_router(promo_codes_router)
 app.include_router(earnings_router)
 app.include_router(bookmarks_router)
+app.include_router(notifications_router)
 
 
 @app.get("/health", description="Health check endpoint to verify the API is running")

@@ -16,7 +16,9 @@ class ReviewService:
 
     async def create_review(self, customer_id: uuid.UUID, data: ReviewCreate) -> Review:
         booking_result = await self.db.execute(
-            select(Booking).where(Booking.id == data.booking_id)
+            select(Booking)
+            .where(Booking.id == data.booking_id)
+            .options(joinedload(Booking.provider), joinedload(Booking.customer))
         )
         booking = booking_result.scalar_one_or_none()
         if not booking:
@@ -72,6 +74,19 @@ class ReviewService:
 
         await self.db.flush()
         await self.db.refresh(review)
+
+        # Notify the provider
+        from app.features.notifications.service import NotificationService
+        notifications = NotificationService(self.db)
+        customer_name = booking.customer.full_name if booking.customer else "A customer"
+        await notifications.send_to_user(
+            user_id=booking.provider.user_id,
+            title="New Review Received ⭐",
+            body=f"{customer_name} left a {review.rating}-star review for your service.",
+            notification_type="new_review",
+            data={"booking_id": str(booking.id), "review_id": str(review.id)},
+        )
+
         return review
 
     async def get_provider_reviews(
@@ -100,3 +115,22 @@ class ReviewService:
         result = await self.db.execute(query)
         reviews = result.scalars().all()
         return reviews, total
+
+    async def get_provider_reviews_stats(self, provider_id: uuid.UUID) -> dict:
+        stmt = select(
+            func.coalesce(func.avg(Review.rating), 0.0).label("avg_rating"),
+            func.count(Review.id).label("total_count")
+        ).where(Review.provider_id == provider_id)
+
+        res = await self.db.execute(stmt)
+        row = res.one()
+
+        avg_rating = float(
+            row.avg_rating) if row and row.avg_rating is not None else 0.0
+        total_count = int(
+            row.total_count) if row and row.total_count is not None else 0
+
+        return {
+            "average_rating": avg_rating,
+            "total_reviews": total_count
+        }

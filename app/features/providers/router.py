@@ -16,6 +16,8 @@ from app.features.providers.schemas import (
     ProviderResponse,
     ProviderReviewUpdate,
     ProviderDashboardStatsResponse,
+    ProviderServicesUpdate,
+    ProviderAvailabilityUpdate,
 )
 from app.features.providers.admin_service import ProviderAdminService
 from app.features.providers.document_service import ProviderDocumentService
@@ -143,6 +145,37 @@ async def update_provider_details(
         data=service.map_profile_to_response(profile),
         message="Provider details updated",
     )
+
+
+# Update provider services
+@router.put("/me/services", response_model=SuccessResponse[ProviderResponse])
+async def update_provider_services(
+    data: ProviderServicesUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = ProviderProfileService(db)
+    profile = await service.update_services(current_user.id, data.services)
+    return success_response(
+        data=service.map_profile_to_response(profile),
+        message="Services updated successfully",
+    )
+
+
+# Update provider availability
+@router.put("/me/availability", response_model=SuccessResponse[ProviderResponse])
+async def update_provider_availability(
+    data: ProviderAvailabilityUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = ProviderProfileService(db)
+    profile = await service.update_availability(current_user.id, data.availability)
+    return success_response(
+        data=service.map_profile_to_response(profile),
+        message="Availability updated successfully",
+    )
+
 
 
 # Upload banner image

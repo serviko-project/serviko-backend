@@ -25,7 +25,7 @@ async def create_review(
 ):
     svc = ReviewService(db)
     review = await svc.create_review(current_user.id, body)
-    
+
     data = {
         "id": review.id,
         "booking_id": review.booking_id,
@@ -51,7 +51,7 @@ async def list_provider_reviews(
 ):
     svc = ReviewService(db)
     reviews, total = await svc.get_provider_reviews(provider_id, rating, page, limit)
-    
+
     mapped_reviews = []
     for r in reviews:
         mapped_reviews.append({
@@ -66,7 +66,15 @@ async def list_provider_reviews(
             "comment": r.comment,
             "created_at": r.created_at,
         })
-        
+
     return paginated_response(data=mapped_reviews, page=page, limit=limit, total=total)
 
 
+@router.get("/stats", response_model=SuccessResponse[dict])
+async def get_provider_reviews_stats(
+    provider_id: uuid.UUID = Query(...),
+    db: AsyncSession = Depends(get_db),
+):
+    svc = ReviewService(db)
+    stats = await svc.get_provider_reviews_stats(provider_id)
+    return success_response(data=stats)

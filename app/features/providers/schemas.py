@@ -7,7 +7,6 @@ from app.utils.enums import ReviewAction
 from app.features.bookings.schemas import BookingListItem
 
 
-
 # Per-category service input with pricing
 class ServiceCategoryInput(BaseModel):
     category_id: uuid.UUID
@@ -27,7 +26,8 @@ class ProviderApplyCreate(BaseModel):
     professional_title: str = Field(..., min_length=1, max_length=150)
     years_of_experience: int = Field(..., ge=0, le=50)
     about: str | None = Field(None, max_length=2000)
-    service_categories: list[ServiceCategoryInput] = Field(default_factory=list)
+    service_categories: list[ServiceCategoryInput] = Field(
+        default_factory=list)
     availability: list[AvailabilitySlotCreate] = Field(
         ..., min_length=7, max_length=7)
     latitude: float | None = None
@@ -40,6 +40,20 @@ class ProviderDetailsUpdate(BaseModel):
     professional_title: str | None = Field(None, min_length=1, max_length=150)
     years_of_experience: int | None = Field(None, ge=0, le=50)
     about: str | None = Field(None, max_length=2000)
+    latitude: float | None = Field(None, ge=-90.0, le=90.0)
+    longitude: float | None = Field(None, ge=-180.0, le=180.0)
+    coverage_radius_km: float | None = Field(None, ge=1.0, le=50.0)
+
+
+# Provider services Update
+class ProviderServicesUpdate(BaseModel):
+    services: list[ServiceCategoryInput]
+
+
+# Provider availability Update
+class ProviderAvailabilityUpdate(BaseModel):
+    availability: list[AvailabilitySlotCreate] = Field(
+        ..., min_length=7, max_length=7)
 
 
 # Re-application payload
@@ -47,7 +61,8 @@ class ProviderReapplyUpdate(BaseModel):
     professional_title: str = Field(..., min_length=1, max_length=150)
     years_of_experience: int = Field(..., ge=0, le=50)
     about: str | None = Field(None, max_length=2000)
-    service_categories: list[ServiceCategoryInput] = Field(default_factory=list)
+    service_categories: list[ServiceCategoryInput] = Field(
+        default_factory=list)
     availability: list[AvailabilitySlotCreate] = Field(
         ..., min_length=7, max_length=7)
     latitude: float | None = None
@@ -167,4 +182,3 @@ class ProviderDashboardStatsResponse(BaseModel):
     new_requests_count: int
     rating: float
     next_job: "BookingListItem | None" = None
-
