@@ -1,4 +1,6 @@
+import json
 import logging
+import os
 
 import firebase_admin
 from firebase_admin import auth, credentials
@@ -17,7 +19,18 @@ def init_firebase() -> None:
         return
 
     settings = get_settings()
-    cred = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
+    
+    firebase_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+    if firebase_json:
+        try:
+            cred_dict = json.loads(firebase_json)
+            cred = credentials.Certificate(cred_dict)
+        except Exception as e:
+            logger.error("Failed to parse FIREBASE_CREDENTIALS_JSON: %s", str(e))
+            raise
+    else:
+        cred = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
+        
     _firebase_app = firebase_admin.initialize_app(cred)
     logger.info("Firebase Admin SDK initialized")
 
