@@ -29,8 +29,8 @@ settings = get_settings()
 app = FastAPI(
     title=settings.APP_TITLE,
     version=settings.APP_VERSION,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url="/redoc" if settings.DEBUG else None,
 )
 
 # CORS
