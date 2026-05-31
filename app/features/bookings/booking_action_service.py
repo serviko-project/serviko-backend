@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ForbiddenException, ValidationException
 from app.features.bookings.booking_query_service import BookingQueryService
 from app.features.bookings.mappers import map_booking_to_detail_dict
+from app.features.notifications.service import NotificationService
 from app.features.payments.service import PaymentService
 
 
@@ -12,6 +13,7 @@ class BookingActionService:
     def __init__(self, db: AsyncSession, query_service: BookingQueryService):
         self.db = db
         self.query_service = query_service
+        self.notifications = NotificationService(db)
 
     async def review_booking(
         self,
@@ -54,6 +56,26 @@ class BookingActionService:
         await self.db.flush()
         await self.db.refresh(booking)
 
+        # Notify the customer
+        customer_name = booking.customer.full_name if booking.customer else "Customer"
+        service_name = booking.service.category.title if booking.service and booking.service.category else "Service"
+        if action == "confirm":
+            await self.notifications.send_to_user(
+                user_id=booking.customer_id,
+                title="Booking Confirmed ✅",
+                body=f"Your booking for {service_name} on {booking.scheduled_date} has been confirmed.",
+                notification_type="booking_confirmed",
+                data={"booking_id": str(booking.id)},
+            )
+        elif action == "reject":
+            await self.notifications.send_to_user(
+                user_id=booking.customer_id,
+                title="Booking Rejected",
+                body=f"Your booking for {service_name} on {booking.scheduled_date} was declined.",
+                notification_type="booking_rejected",
+                data={"booking_id": str(booking.id)},
+            )
+
         return map_booking_to_detail_dict(booking)
 
     async def cancel_booking(
@@ -77,6 +99,16 @@ class BookingActionService:
 
         await PaymentService(self.db).refund_paid_booking(booking)
         await self.db.refresh(booking)
+
+        # Notify the provider
+        customer_name = booking.customer.full_name if booking.customer else "A customer"
+        await self.notifications.send_to_user(
+            user_id=booking.provider.user_id,
+            title="Booking Cancelled",
+            body=f"{customer_name} cancelled their booking on {booking.scheduled_date}.",
+            notification_type="booking_cancelled",
+            data={"booking_id": str(booking.id)},
+        )
 
         return map_booking_to_detail_dict(booking)
 
@@ -116,5 +148,15 @@ class BookingActionService:
 
         await self.db.flush()
         await self.db.refresh(booking)
+
+        # Notify the customer
+        service_name = booking.service.category.title if booking.service and booking.service.category else "Service"
+        await self.notifications.send_to_user(
+            user_id=booking.customer_id,
+            title="Booking Completed 🎉",
+            body=f"Your {service_name} booking has been completed. Please leave a review!",
+            notification_type="booking_completed",
+            data={"booking_id": str(booking.id)},
+        )
 
         return map_booking_to_detail_dict(booking)

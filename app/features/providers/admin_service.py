@@ -141,6 +141,35 @@ class ProviderAdminService(ProviderBaseService):
 
         profile.reviewed_at = datetime.now(timezone.utc)
 
+        # Notify the provider user
+        from app.features.notifications.service import NotificationService
+        notifications = NotificationService(self.db)
+
+        if profile.status == ProviderStatus.APPROVED.value:
+            await notifications.send_to_user(
+                user_id=profile.user_id,
+                title="Provider Application Approved 🎉",
+                body="Congratulations! Your provider profile application has been approved. You can now start offering services.",
+                notification_type="provider_approved",
+                data={"provider_id": str(profile.id)},
+            )
+        elif profile.status == ProviderStatus.REJECTED.value:
+            await notifications.send_to_user(
+                user_id=profile.user_id,
+                title="Provider Application Rejected ❌",
+                body=f"Your provider profile application was not approved. Reason: {profile.rejection_reason}",
+                notification_type="provider_rejected",
+                data={"provider_id": str(profile.id)},
+            )
+        elif profile.status == ProviderStatus.BLOCKED.value:
+            await notifications.send_to_user(
+                user_id=profile.user_id,
+                title="Provider Account Blocked ⚠️",
+                body="Your provider account has been blocked by the admin. Please contact support.",
+                notification_type="provider_blocked",
+                data={"provider_id": str(profile.id)},
+            )
+
         await self.db.flush()
         return await self.get_provider_by_id(provider_id)
 

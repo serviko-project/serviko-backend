@@ -16,7 +16,9 @@ class ReviewService:
 
     async def create_review(self, customer_id: uuid.UUID, data: ReviewCreate) -> Review:
         booking_result = await self.db.execute(
-            select(Booking).where(Booking.id == data.booking_id)
+            select(Booking)
+            .where(Booking.id == data.booking_id)
+            .options(joinedload(Booking.provider), joinedload(Booking.customer))
         )
         booking = booking_result.scalar_one_or_none()
         if not booking:
@@ -72,6 +74,19 @@ class ReviewService:
 
         await self.db.flush()
         await self.db.refresh(review)
+
+        # Notify the provider
+        from app.features.notifications.service import NotificationService
+        notifications = NotificationService(self.db)
+        customer_name = booking.customer.full_name if booking.customer else "A customer"
+        await notifications.send_to_user(
+            user_id=booking.provider.user_id,
+            title="New Review Received ⭐",
+            body=f"{customer_name} left a {review.rating}-star review for your service.",
+            notification_type="new_review",
+            data={"booking_id": str(booking.id), "review_id": str(review.id)},
+        )
+
         return review
 
     async def get_provider_reviews(

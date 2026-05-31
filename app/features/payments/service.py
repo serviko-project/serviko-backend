@@ -102,6 +102,9 @@ class PaymentService:
         payment.paid_at = datetime.now(timezone.utc)
         await self.db.flush()
         await self.db.refresh(payment)
+
+        await self._send_payment_notifications(payment, booking)
+
         return self._map_payment_response(payment)
 
     async def get_booking_payment(
@@ -142,6 +145,18 @@ class PaymentService:
         payment.refunded_at = datetime.now(timezone.utc)
         payment.razorpay_status = "refunded"
         await self.db.flush()
+
+        # Notify customer about refund
+        from app.features.notifications.service import NotificationService
+        notifications = NotificationService(self.db)
+        await notifications.send_to_user(
+            user_id=payment.customer_id,
+            title="Refund Processed 💸",
+            body=f"A refund of ₹{payment.amount:.2f} has been processed for your booking on {booking.scheduled_date}.",
+            notification_type="payment_refunded",
+            data={"booking_id": str(booking.id), "payment_id": str(payment.id)},
+        )
+
         return payment
 
     async def handle_webhook(self, *, payload: dict) -> None:
@@ -167,6 +182,9 @@ class PaymentService:
         payment.razorpay_status = entity.get("status") or "captured"
         payment.paid_at = datetime.now(timezone.utc)
         await self.db.flush()
+
+        if payment.booking:
+            await self._send_payment_notifications(payment, payment.booking)
 
     async def _get_booking(self, booking_id: uuid.UUID) -> Booking:
         result = await self.db.execute(
@@ -232,3 +250,25 @@ class PaymentService:
 
     def _to_paise(self, amount_rupees: float) -> int:
         return int(round(amount_rupees * 100))
+
+    async def _send_payment_notifications(self, payment: Payment, booking: Booking) -> None:
+        from app.features.notifications.service import NotificationService
+        notifications = NotificationService(self.db)
+
+        # Notify customer
+        await notifications.send_to_user(
+            user_id=payment.customer_id,
+            title="Payment Successful ✅",
+            body=f"Your payment of ₹{payment.amount:.2f} for booking on {booking.scheduled_date} was successful.",
+            notification_type="payment_success",
+            data={"booking_id": str(booking.id), "payment_id": str(payment.id)},
+        )
+
+        # Notify provider
+        await notifications.send_to_user(
+            user_id=booking.provider.user_id,
+            title="Payment Received 💰",
+            body=f"You received a payment of ₹{payment.amount:.2f} for booking on {booking.scheduled_date}.",
+            notification_type="payment_received",
+            data={"booking_id": str(booking.id), "payment_id": str(payment.id)},
+        )
